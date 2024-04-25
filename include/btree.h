@@ -71,13 +71,14 @@ typedef struct Node {
 typedef struct BPlusTree {
     Node *root; // 根节点
     int order;  // 树的顺序（最大和最小度）
+    FILE *file;
 } BPlusTree;
 
 
 
 /*
  * 以下为B+数的一些基本接口的函数原型
- * 具体实现位于b_plus.c文件中
+ * 具体实现位于btree.c文件中
  */
 
 
