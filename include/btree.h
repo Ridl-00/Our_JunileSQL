@@ -14,9 +14,6 @@
 
 #define MAX_ORDER 3 
 
-#define MAX_ORDER 4  // 您可以根据需要调整这个值
-
-// 以下是您提供的结构体定义
 typedef enum {
     CPC_M,          /* 中共党员 */
     P_CPC_M,        /* 中共预备党员 */
@@ -65,81 +62,12 @@ typedef struct Node {
     int keys[MAX_ORDER - 1]; // 存储键的数组（学号）
     void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
 
-    // 如果是叶节点，这些属性是有效的
+    // 如果是非叶节点为NULL
     StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
     struct Node *next; // 指向下一个叶节点的指针
 } Node;
 
 // B+树结构体
-typedef struct BPlusTree {
-    Node *root; // 根节点
-    int order;  // 树的顺序（最大和最小度）
-} BPlusTree;typedef enum {
-
-    CPC_M,          /* 中共党员 */     
-    P_CPC_M,        /* 中共预备党员 */ 
-    CYLC_M,         /* 共青员 */ 
-    MASS,           /* 群众 */
-    OTHERS          /* 其他 */
-
-}Political;
-
-typedef struct{
-
-    time_t join_time;
-
-}CPC_INFO;//党员特征信息
-
-typedef struct{
-
-    time_t join_time;
-    time_t data_of_application;
-    bool is_recommended;
-    bool is_active;
-    bool is_training_finished;
-
-} CYLC_INFO;//共青团员特征信息信息
-
-typedef struct{
-
-    bool is_sworn; 
-    bool is_procedure_finished;
-    bool is_data_over;
-
-} P_CPC_INFO;//预备党员特征信息
-
-typedef union{
-
-    CPC_INFO CCP_info;
-    CYLC_INFO CYLC_info;
-    P_CPC_INFO P_CCP_M_info;
-
-} Feature_info;
-
-
-
-
-typedef struct{
-
-    int age;
-    char id[10];
-    char name[50];
-    char class_number[10];
-    Political political;//政治面貌
-    Feature_info info;
-
-}StudentRecord;
-
-typedef struct Node {
-    bool is_leaf;                // 是否是叶节点
-    int student_id;
-    int num_keys;                // 当前键的数量
-    int keys[MAX_ORDER - 1];     // 存储键的数组
-    void *children[MAX_ORDER];   // 指向子节点或叶节点的指针
-    StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
-    struct Node *next;           // 指向下一个叶节点的指针
-} Node;
-
 typedef struct BPlusTree {
     Node *root; // 根节点
     int order;  // 树的顺序（最大和最小度）
