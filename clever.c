@@ -24,6 +24,15 @@ typedef enum {
 
 const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".change", ".analyze"};
 
+static char *f_fgets(char *buffer, int n, FILE *stream){
+    char *ptr = fgets(buffer, n, stdin);
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0'; // 移除换行符
+    }
+    return ptr;
+}
+
 void print_prompt() { printf("db > "); }
 
 COMMANDS do_meta_command(char Buffer[]) {
@@ -58,11 +67,7 @@ int main(int argc, char* argv[]) {
         print_prompt();
 
 
-        fgets(buffer, sizeof(buffer), stdin);
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n') {
-            buffer[len - 1] = '\0'; // 移除换行符
-        }
+        f_fgets(buffer, sizeof(buffer), stdin);
 
         // switch (do_meta_command(buffer)) {
         COMMANDS temp=do_meta_command(buffer);
