@@ -135,7 +135,7 @@ void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 
 void delete_from_leaf(Node *leaf, int key);
 
-void delete(BPlusTree *tree, int key);
+// void delete(BPlusTree *tree, int key);
 
 void delete_from_node(Node *node, int key, BPlusTree *tree);
 
@@ -144,5 +144,16 @@ void borrow_from_left(Node *parent, int index);
 void borrow_from_right(Node *parent, int index);
 
 void merge_children(Node *parent, int index);
+
+
+/*
+ *统计函数
+ */
+
+void analyze_class(char *class_number);
+// 统计个数
+void count_political_by_class(Node *n, const char *class_number, PoliticalCount *count);
+// 打印统计结果
+void print_political_count_by_class(BPlusTree *tree, const char *class_number);
 
 #endif
