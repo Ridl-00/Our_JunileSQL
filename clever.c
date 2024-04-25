@@ -73,6 +73,10 @@ int main(int argc, char* argv[]) {
             case (CHANGE):
             case (ANALYZE):
                 printf("Received command: %d\n", temp);
+                printf("Input Class ID");
+                char class_number[10];
+                fgets(class_number, sizeof(class_number), stdin);
+                analyze_class(class_number);
                 continue;
             case (INVALID_INPUT):
                 printf("Unrecognized command '%s'\n", buffer);

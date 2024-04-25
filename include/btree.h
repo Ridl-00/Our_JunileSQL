@@ -55,6 +55,15 @@ typedef struct {
     Feature_info info;
 } StudentRecord;
 
+// 班级政治面貌统计
+typedef struct {
+    int CPC_M_count;
+    int P_CPC_M_count;
+    int CYLC_M_count;
+    int MASS_count;
+    int OTHERS_count;
+} PoliticalCount;
+
 // 节点结构体
 typedef struct Node {
     bool is_leaf; // 是否是叶节点
