@@ -7,4 +7,4 @@ clever_db : clever.c
 clever.o : clever.c
 	@gcc -c clever.c -o clever.o
 btree.o : btree.h
-	@gcc -c btree.c -o btree.o
+	@gcc -I./include/ -c btree.c -o btree.o
