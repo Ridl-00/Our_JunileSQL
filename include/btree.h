@@ -28,22 +28,22 @@ typedef struct {
 
 typedef struct {
     time_t join_time;
-    time_t data_of_application;
+    time_t date_of_application;
     bool is_recommended;
-    bool is_active;
+    bool is_adult;
     bool is_training_finished;
 } CYLC_INFO; // 共青团员特征信息
 
 typedef struct {
     bool is_sworn;
     bool is_procedure_finished;
-    bool is_data_over;
+    bool is_date_over;
 } P_CPC_INFO; // 预备党员特征信息
 
 typedef union {
     CPC_INFO CCP_info;
     CYLC_INFO CYLC_info;
-    P_CPC_INFO P_CCP_M_info;
+    P_CPC_INFO P_CPC_M_info;
 } Feature_info;
 
 typedef struct {

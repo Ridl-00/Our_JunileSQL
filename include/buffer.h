@@ -20,6 +20,8 @@ Buffer *new_buffer(size_t size){
     Buffer *buff = (Buffer *)malloc(sizeof(Buffer));
     if(buff != NULL){
         buff->buffer = (char *)malloc(sizeof(char) * size);
+        buff->size = size;
+        buff->input_length;
         return buff;
     }
     else{
