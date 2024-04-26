@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#define MAX_BUFFER_SIZE
+#define MAX_BUFFER_SIZE 1024
 typedef struct 
 {
     char *buffer;
@@ -17,6 +17,10 @@ typedef struct
 
 Buffer *new_buffer(size_t size){
 
+    if(size > 1024){
+        puts("申请的缓存区过大");
+        return NULL;
+    }
     Buffer *buff = (Buffer *)malloc(sizeof(Buffer));
     if(buff != NULL){
         buff->buffer = (char *)malloc(sizeof(char) * size);

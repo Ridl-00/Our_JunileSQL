@@ -13,37 +13,39 @@
  */
 
 #define MAX_ORDER 3 
+typedef struct tm tm;
 
 typedef enum {
     CPC_M,          /* 中共党员 */
     P_CPC_M,        /* 中共预备党员 */
     CYLC_M,         /* 共青团员 */
     MASS,           /* 群众 */
-    OTHERS          /* 其他 */
+    OTHERS,          /* 其他 */
+    COUNT
 } Political;
 
 typedef struct {
-    time_t join_time;
+    tm join_time;//入党时间
 } CPC_INFO; // 党员特征信息
 
 typedef struct {
-    time_t join_time;
-    time_t date_of_application;
-    bool is_recommended;
-    bool is_adult;
+    tm join_time;//加入时间
+    tm date_of_application;//申请日期
+    bool is_recommended;//是否被推荐
+    //有一个age数据记录年龄，无需判断是否成年
     bool is_training_finished;
 } CYLC_INFO; // 共青团员特征信息
 
 typedef struct {
-    bool is_sworn;
-    bool is_procedure_finished;
-    bool is_date_over;
+    bool is_sworn;//是否完成宣誓
+    bool is_date_over;//预备期是否已满
+    bool is_procedure_finished;//转正手续是否完成
 } P_CPC_INFO; // 预备党员特征信息
 
 typedef union {
     CPC_INFO CCP_info;
     CYLC_INFO CYLC_info;
-    P_CPC_INFO P_CPC_M_info;
+    P_CPC_INFO P_CPC_info;
 } Feature_info;
 
 typedef struct {
