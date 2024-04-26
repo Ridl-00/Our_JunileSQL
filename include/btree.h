@@ -13,43 +13,45 @@
  */
 
 #define MAX_ORDER 3 
+typedef struct tm tm;
 
 typedef enum {
     CPC_M,          /* 中共党员 */
     P_CPC_M,        /* 中共预备党员 */
     CYLC_M,         /* 共青团员 */
     MASS,           /* 群众 */
-    OTHERS          /* 其他 */
+    OTHERS,          /* 其他 */
+    COUNT
 } Political;
 
 typedef struct {
-    time_t join_time;
+    tm join_time;//入党时间
 } CPC_INFO; // 党员特征信息
 
 typedef struct {
-    time_t join_time;
-    time_t data_of_application;
-    bool is_recommended;
-    bool is_active;
+    tm join_time;//加入时间
+    tm date_of_application;//申请日期
+    bool is_recommended;//是否被推荐
+    //有一个age数据记录年龄，无需判断是否成年
     bool is_training_finished;
 } CYLC_INFO; // 共青团员特征信息
 
 typedef struct {
-    bool is_sworn;
-    bool is_procedure_finished;
-    bool is_data_over;
+    bool is_sworn;//是否完成宣誓
+    bool is_date_over;//预备期是否已满
+    bool is_procedure_finished;//转正手续是否完成
 } P_CPC_INFO; // 预备党员特征信息
 
-typedef union {
+typedef union Feature_info{
     CPC_INFO CCP_info;
     CYLC_INFO CYLC_info;
-    P_CPC_INFO P_CCP_M_info;
+    P_CPC_INFO P_CPC_info;
 } Feature_info;
 
 typedef struct {
     Political political; // 政治面貌
     int age;
-    char id[10];
+    int student_id;
     char name[50];
     char class_number[10];
     Feature_info info;
@@ -71,13 +73,14 @@ typedef struct Node {
 typedef struct BPlusTree {
     Node *root; // 根节点
     int order;  // 树的顺序（最大和最小度）
+    FILE *file;
 } BPlusTree;
 
 
 
 /*
  * 以下为B+数的一些基本接口的函数原型
- * 具体实现位于b_plus.c文件中
+ * 具体实现位于btree.c文件中
  */
 
 
@@ -94,7 +97,7 @@ Node *new_node(bool is_leaf);
  * 创建一个新B+树
  * @param order: 指出新创建的B+树的阶数
  */
-BPlusTree *new_bplus_tree(int order);
+BPlusTree *new_bplus_tree(const char *filename, int order);
 /*
  * 搜索操作
  * search_in_node
@@ -111,6 +114,7 @@ Node *search(BPlusTree *tree, int key);
 /*
  * 插入操作
  */
+void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 
 void insert_into_leaf(Node *leaf, int key, StudentRecord record);
 
@@ -118,7 +122,6 @@ void insert(BPlusTree *tree, int key, StudentRecord record);
 
 void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree);
 
-void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 /*
  * 删除操作
  * delete_from_lea

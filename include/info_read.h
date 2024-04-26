@@ -5,17 +5,17 @@
 #include <btree.h>
 #include <stdio.h>
 
-// 定义读取函数指针
-typedef void (*ReadFunction)(FILE *input, Feature_info *info);
+typedef void (*InputFunction)(Feature_info *info);
 
-// 读取 CPC_INFO 类型的数据
+static void read_time(struct tm *time_info);
 
-// 读取 CYLC_INFO 类型的数据
+static bool read_bool(const char *prompt);
 
-// 读取 P_CPC_INFO 类型的数据
+static void read_cpc_info(Feature_info *info);
 
-// 根据政治面貌读取特征信息
+static void read_cylc_info(Feature_info *info);
 
-// 读取学生记录
+static void read_p_cpc_info(Feature_info *info);
 
+void read_feature_info(StudentRecord *record);
 #endif
