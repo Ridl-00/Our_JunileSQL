@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 printf("请以 <Student_ID> <Age> <Name> <Class Number> <Political> 格式输入学生信息\n");
-                printf("( <Political>参数 党员、预备党员、团员、群众、其他分别用: 0 , 1, 2, 3, 4 5 替代) \n");
+                printf("( <Political>参数可选： <党员>、<预备党员>、<团员>、<群众> 和 <其他> 分别用: 0 , 1, 2, 3, 4 5 替代) \n");
                 print_prompt();
                 int temp_info = -1;
                 fgets(input_buffer->buffer, input_buffer->size, stdin);
