@@ -19,7 +19,7 @@ typedef enum{
     OPEN,
     SHOW,
     COM_NUM,
-    INVALID_INPUT,
+    INVALID_INPUT
 
 } COMMANDS;
 
