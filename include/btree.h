@@ -42,7 +42,7 @@ typedef struct {
     bool is_procedure_finished;//转正手续是否完成
 } P_CPC_INFO; // 预备党员特征信息
 
-typedef union {
+typedef union Feature_info{
     CPC_INFO CCP_info;
     CYLC_INFO CYLC_info;
     P_CPC_INFO P_CPC_info;
@@ -51,7 +51,7 @@ typedef union {
 typedef struct {
     Political political; // 政治面貌
     int age;
-    char id[10];
+    int student_id;
     char name[50];
     char class_number[10];
     Feature_info info;
@@ -97,7 +97,7 @@ Node *new_node(bool is_leaf);
  * 创建一个新B+树
  * @param order: 指出新创建的B+树的阶数
  */
-BPlusTree *new_bplus_tree(int order);
+BPlusTree *new_bplus_tree(const char *filename, int order);
 /*
  * 搜索操作
  * search_in_node
@@ -114,6 +114,7 @@ Node *search(BPlusTree *tree, int key);
 /*
  * 插入操作
  */
+void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 
 void insert_into_leaf(Node *leaf, int key, StudentRecord record);
 
@@ -121,7 +122,6 @@ void insert(BPlusTree *tree, int key, StudentRecord record);
 
 void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree);
 
-void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 /*
  * 删除操作
  * delete_from_lea

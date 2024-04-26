@@ -16,7 +16,7 @@ Node *new_node(bool is_leaf) {
 }
 
 // 创建一个新的B+树
-BPlusTree *new_bplus_tree(int order) {
+BPlusTree *new_bplus_tree(const char *filename, int order) {
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
     tree->order = order;
     tree->root = new_node(true);
@@ -94,7 +94,7 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
 }
 
 
-void split_child_node(Node *parent, int index, Node *child, BPlusTree *tree) {
+void split_child(Node *parent, int index, Node *child, BPlusTree *tree) {
     // 创建一个新节点用于分裂
     Node *new_child_node = new_node(child->is_leaf);
     new_child_node->num_keys = tree->order / 2;

@@ -6,28 +6,43 @@
 #include <string.h>
 #include <strings.h>
 
+#define TIME_BUFFER_SIZE 11
+#define BOOL_BUFFER_SIZE 4
+
 typedef void (*InputFunction)(Feature_info *info);
 
-void read_time(struct tm *time_info, Buffer *buff) {
-    Buffer temp_buff
+static char time_buffer[TIME_BUFFER_SIZE];
+static char bool_buffer[BOOL_BUFFER_SIZE];
+
+static void read_time(struct tm *time_info) {
     printf("请输入时间 (格式: YYYY-MM-DD): ");
-    fgets(buff->buffer, sizeof(buff->size), stdin);
-    strptime(buff->buffer, "%Y-%m-%d", time_info);
+    fgets(time_buffer, TIME_BUFFER_SIZE, stdin);
+    strptime(time_buffer, "%Y-%m-%d", time_info);
 }
 
-bool read_bool(const char *prompt) {
-    char response[4];
-    printf("%s (yes/no): ", prompt);
-    fgets(response, sizeof(response), stdin);
-    return strcasecmp(response, "yes\n") == 0;
+static bool read_bool(const char *prompt) {
+    while(true){
+        printf("%s (yes/no): ", prompt);
+        fgets(bool_buffer, BOOL_BUFFER_SIZE, stdin);
+        if(strcasecmp(bool_buffer, "yes\n") == 0){
+            return true;
+        }
+        else if(strcasecmp(bool_buffer, "no\n") == 0){
+            return false;
+        }
+        else{
+            continue;
+        }
+    }
 }
 
-void read_cpc_info(Feature_info *info) {
+static void read_cpc_info(Feature_info *info) {
+    
     printf("输入学生相关信息：\n");
     read_time(&info->CCP_info.join_time);
 }
 
-void read_cylc_info(Feature_info *info) {
+static void read_cylc_info(Feature_info *info) {
     printf("输入学生相关信息\n");
     read_time(&info->CYLC_info.join_time);
     printf("请输入提交入党申请的申请日期：\n");
@@ -36,7 +51,7 @@ void read_cylc_info(Feature_info *info) {
     info->CYLC_info.is_training_finished = read_bool("训练是否完成");
 }
 
-void read_p_cpc_info(Feature_info *info) {
+static void read_p_cpc_info(Feature_info *info) {
     printf("输入学生相关信息：\n");
     info->P_CPC_info.is_sworn = read_bool("是否完成宣誓");
     info->P_CPC_info.is_date_over = read_bool("预备期是否已满");
@@ -56,7 +71,6 @@ void read_feature_info(StudentRecord *record) {
             input_func = read_p_cpc_info;
             break;
         default:
-            printf("没有对应的特征信息输入函数。\n");
             return;
     }
     input_func(&record->info);
