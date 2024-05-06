@@ -69,8 +69,8 @@ typedef struct Node {
     bool is_leaf; // 是否是叶节点
     int num_keys; // 当前键的数量
     int keys[MAX_ORDER - 1]; // 存储键的数组（学号）
-    void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
-
+    // void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
+    void ** pointers;
     // 如果是非叶节点为NULL
     StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
     struct Node *next; // 指向下一个叶节点的指针
@@ -147,7 +147,7 @@ void merge_children(Node *parent, int index);
 
 
 /*
- *统计函数
+ *统计操作
  */
 
 void analyze_class(char *class_number);

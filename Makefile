@@ -1,10 +1,16 @@
-obj = clever.o 
+obj = clever.o btree.o
 
 vpath %.h ./include/
 
-clever_db : clever.c
-	@gcc -o clever_db clever.c	
-clever.o : clever.c
-	@gcc -c clever.c -o clever.o
-btree.o : btree.h
-	@gcc -I./include/ -c btree.c -o btree.o
+clever_db: $(obj)
+	@gcc -o $@$^
+
+clever.o: clever.c
+	@gcc -I./include/ -c $< -o$@
+
+btree.o: btree.c btree.h
+	@gcc -I./include/ -c $< -o$@
+
+.PHONY: clean
+clean:
+	rm -f $(obj) clever_db
