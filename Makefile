@@ -3,7 +3,8 @@ obj = clever.o print.o operating.o info_read.o btree.o buffer.o
 vpath %.h ./include/
 
 db.out : $(obj) repo_dir
-	gcc $(obj) -o db.out
+	@gcc $(obj) -o db.out; \
+	rm $(obj)
 
 clever.o :  buffer.h btree.h operating.h 
 	gcc -I./include -c clever.c -o clever.o

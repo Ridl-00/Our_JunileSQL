@@ -123,10 +123,11 @@ int main(int argc, char* argv[]) {
                 sscanf(input_buffer->buffer, "%d %d %s %s %d",&record.student_id, &record.age,
                                                             record.name, record.class_number, 
                                                             &temp_info);
-                if(record.student_id == -1 || record.age == -1 || temp_info == -1){
+                if(record.student_id < 0 || record.age < 0|| temp_info < 0){
                     wrong_format_prompt();
                     continue;
                 }
+                record.political = temp_info;
                 read_feature_info(&record);
                 insert_student_record(current_tree, record.student_id, record);
                 continue;
@@ -156,7 +157,9 @@ int main(int argc, char* argv[]) {
             }
             case (SHOW):
             {
-                print_bplus_tree(current_tree);
+                if(current_tree != NULL){
+                    print_bplus_tree(current_tree);
+                }
                 continue;
             }
             case (WRITE):

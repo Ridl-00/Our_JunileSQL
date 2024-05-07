@@ -6,7 +6,7 @@
 #include <strings.h>
 
 #define TIME_BUFFER_SIZE 11
-#define BOOL_BUFFER_SIZE 4
+#define BOOL_BUFFER_SIZE 10
 
 typedef void (*InputFunction)(Feature_info *info);
 
@@ -44,12 +44,13 @@ static bool read_bool(const char *prompt) {
 
 static void read_cpc_info(Feature_info *info) {
     
-    printf("输入学生相关信息：\n");
+    printf("输入学生入党时间：\n");
     read_time(&info->CCP_info.join_time);
 }
 
 static void read_cylc_info(Feature_info *info) {
     printf("输入学生相关信息\n");
+    puts("请输入学生的入团时间");
     read_time(&info->CYLC_info.join_time);
     printf("请输入提交入党申请的申请日期：\n");
     read_time(&info->CYLC_info.date_of_application);

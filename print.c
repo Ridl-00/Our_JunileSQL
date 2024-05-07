@@ -20,7 +20,7 @@ static void print_cpc_member(const StudentRecord *record) {
 
 // 打印共青团员的记录
 static void print_cylc_member(const StudentRecord *record) {
-    printf("共青团员: %s, Student_ID: %d, 加入时间: %d-%d-%d, 申请日期: %d-%d-%d\n",
+    printf("共青团员: %s, Student_ID: %d, 入团时间: %d-%d-%d, 提交入党申请时间: %d-%d-%d\n",
            record->name, record->student_id, record->info.CYLC_info.join_time.tm_year + 1900,
            record->info.CYLC_info.join_time.tm_mon + 1, record->info.CYLC_info.join_time.tm_mday,
            record->info.CYLC_info.date_of_application.tm_year + 1900,
