@@ -15,6 +15,7 @@ void insert_student_record(BPlusTree *tree, int key, StudentRecord record);
 
 StudentRecord *read_student_record(BPlusTree *tree, int key);
 
+// 删除学生记录
 void delete_student_record(BPlusTree *tree, int key);
 
 extern BPlusTree *create_database(const char *filename, int order);
