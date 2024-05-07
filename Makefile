@@ -2,8 +2,8 @@ obj = clever.o print.o operating.o info_read.o btree.o buffer.o
 
 vpath %.h ./include/
 
-db.out : $(obj) repo_dir
-	@gcc $(obj) -o db.out; \
+canWe_win_aPrize_db.out : $(obj) repo_dir
+	@gcc $(obj) -o canWe_win_aPrize_db.out; \
 	rm $(obj)
 
 clever.o :  buffer.h btree.h operating.h 
@@ -26,7 +26,7 @@ buffer.o : buffer.h
 
 
 
-.PHONY : clean repo_dir
+.PHONY : clean repo_dir run
 clean :
 	-rm -f *.o *.out
 
@@ -34,3 +34,6 @@ repo_dir :
 	@if [ ! -d "./repo/" ]; then \
 		mkdir -p "./repo/"; \
 	fi
+
+run: 
+	./canWe_win_aPrize_db.out
