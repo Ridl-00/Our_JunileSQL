@@ -16,11 +16,11 @@
 typedef struct tm tm;
 
 typedef enum {
-    CPC_M,          /* 中共党员 */
-    P_CPC_M,        /* 中共预备党员 */
-    CYLC_M,         /* 共青团员 */
-    MASS,           /* 群众 */
-    OTHERS,          /* 其他 */
+    CPC_M,          /* 0 中共党员 */
+    P_CPC_M,        /* 1 中共预备党员 */
+    CYLC_M,         /* 2 共青团员 */
+    MASS,           /* 3 群众 */
+    OTHERS,         /* 4 其他 */
     COUNT
 } Political;
 
@@ -57,13 +57,19 @@ typedef struct {
     Feature_info info;
 } StudentRecord;
 
+// 班级政治面貌统计
+typedef struct {
+    char class_number[10];
+    int counts[5];  /* [0 中共党员, 1 中共预备党员, 2 共青团员 , 3 群众 , 4 其他 */
+} Class_info;
+
 // 节点结构体
 typedef struct Node {
     bool is_leaf; // 是否是叶节点
     int num_keys; // 当前键的数量
     int keys[MAX_ORDER - 1]; // 存储键的数组（学号）
     void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
-
+    // void ** pointers;
     // 如果是非叶节点为NULL
     StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
     struct Node *next; // 指向下一个叶节点的指针
@@ -129,7 +135,7 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
 
 void delete_from_leaf(Node *leaf, int key);
 
-void delete(BPlusTree *tree, int key);
+void delete_(BPlusTree *tree, int key);
 
 void delete_from_node(Node *node, int key, BPlusTree *tree);
 
@@ -138,5 +144,16 @@ void borrow_from_left(Node *parent, int index);
 void borrow_from_right(Node *parent, int index);
 
 void merge_children(Node *parent, int index);
+
+
+/*
+ *统计操作
+ */
+
+void analyze_class(BPlusTree *tree, char *class_number);
+// 统计个数
+void count_political_by_class(Node * const root, const char *class_number, Class_info *count);
+// 打印统计结果
+void print_political_count_by_class(Class_info *count);
 
 #endif

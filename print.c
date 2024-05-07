@@ -35,7 +35,10 @@ static void print_p_cpc_member(const StudentRecord *record) {
            record->info.P_CPC_info.is_sworn ? "是" : "否",
            record->info.P_CPC_info.is_procedure_finished ? "是" : "否");
 }
-
+// 打印群众的记录
+static void print_mass_member(StudentRecord *record) {
+    printf("群众: %s, Student_ID: %d\n", record->name, record->student_id);
+}
 // 打印其他政治面貌的记录
 static void print_others(const StudentRecord *record) {
     printf("其他: %s, Student_ID: %d\n", record->name, record->student_id);
@@ -51,6 +54,7 @@ PrintFunction select_print_function(Political political) {
         case P_CPC_M:
             return print_p_cpc_member;
         case MASS:
+            return print_mass_member;
         case OTHERS:
             return print_others;
         default:
@@ -61,6 +65,10 @@ PrintFunction select_print_function(Political political) {
 // 遍历B+树并打印所有记录
 void print_bplus_tree(const BPlusTree *tree) {
     Node *current = tree->root;
+	if (current == NULL) {
+		printf("Empty tree.\n");
+		return;
+	}
     while (current) {
         for (int i = 0; i < current->num_keys; i++) {
             PrintFunction print_function = select_print_function(current->records[i].political);

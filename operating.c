@@ -86,7 +86,7 @@ StudentRecord *read_student_record(BPlusTree *tree, int key) {
 }
 
 void delete_student_record(BPlusTree *tree, int key) {
-    delete(tree, key);
+    delete_(tree, key);
 }
 
 extern BPlusTree *create_database(const char *filename, int order) {

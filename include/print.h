@@ -17,6 +17,8 @@ static void print_cpc_member(const StudentRecord *record);
 
 static void print_p_cpc_member(const StudentRecord *record);
 
+static void print_mass_member(const StudentRecord *record);
+
 static void print_others(const StudentRecord *record);
 
 PrintFunction select_print_function(const Political political);

@@ -4,8 +4,7 @@
 
 #include <btree.h>
 #include <stdio.h>
-
-typedef void (*InputFunction)(Feature_info *info);
+#include <time.h>
 
 static void read_time(struct tm *time_info);
 

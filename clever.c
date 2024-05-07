@@ -47,10 +47,12 @@ static char *f_fgets(char *buffer, int n, FILE *stream){
     return ptr;
 }
 
+
 static void help_prompt(void) { puts("使用'.exit'命令可退出程序"); };
 static void print_prompt(void) { printf("db/%s:> ", current_filename); }
 static void save_prompt(const char *filename) { printf("数据已被保存至 %s文件\n", filename); }
 static void wrong_format_prompt(void) { puts("错误的输入格式!"); };
+
 
 COMMANDS do_meta_command(char Buffer[]) {
 
@@ -159,6 +161,10 @@ int main(int argc, char* argv[]) {
             {
                 if(current_tree != NULL){
                     print_bplus_tree(current_tree);
+                    printf("Input Class ID");
+                    char class_number[10];
+                    fgets(class_number, sizeof(class_number), stdin);
+                    analyze_class(current_tree, class_number);
                 }
                 continue;
             }
