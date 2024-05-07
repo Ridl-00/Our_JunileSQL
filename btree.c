@@ -16,7 +16,7 @@ Node *new_node(bool is_leaf) {
 }
 
 // 创建一个新的B+树
-BPlusTree *new_bplus_tree(int order) {
+BPlusTree *new_bplus_tree(const char *filename, int order) {
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
     tree->order = order;
     tree->root = new_node(true);
@@ -94,7 +94,7 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
 }
 
 
-void split_child_node(Node *parent, int index, Node *child, BPlusTree *tree) {
+void split_child(Node *parent, int index, Node *child, BPlusTree *tree) {
     // 创建一个新节点用于分裂
     Node *new_child_node = new_node(child->is_leaf);
     new_child_node->num_keys = tree->order / 2;
@@ -150,7 +150,7 @@ void delete_from_leaf(Node *leaf, int key) {
 }
 
 // 从B+树中删除关键字
-void delete(BPlusTree *tree, int key) {
+void delete_(BPlusTree *tree, int key) {
     Node *root = tree->root;
     delete_from_node(root, key, tree);
     // 如果根节点的关键字数量为0
@@ -266,4 +266,51 @@ void merge_children(Node *parent, int index) {
 
     // 释放右子节点的内存
     free(right_child);
+}
+
+// 统计班级信息
+void analyze_class(BPlusTree *tree, char *class_number)
+{
+    Class_info *count = (Class_info *)malloc(sizeof(Class_info));
+    Node *root = tree->root;
+    
+    count_political_by_class(root, class_number, count);
+    print_political_count_by_class(count);
+}
+// 统计个数
+void count_political_by_class(Node * const root, const char *class_number, Class_info *count)
+{
+	if (root == NULL) {
+		printf("Empty tree.\n");
+		return;
+	}
+    // 初始化Class_info结构体
+    strcpy(count->class_number, class_number);
+    for (int i=0;i<5;i++){
+        count->counts[i]=0;
+    }
+
+	int i;
+	Node * c = root;
+	while (!c->is_leaf)
+		c = c->children[0];
+	while (true) {
+		for (i = 0; i < c->num_keys; i++) {
+            if (strcmp(class_number, c->records[i].class_number)==0){
+                count->counts[c->records[i].political]++;
+            }
+		}
+		if (c->children[MAX_ORDER - 1] != NULL) {
+			c = c->children[MAX_ORDER - 1];
+		}
+		else
+			break;
+	}
+	printf("\n");
+}
+// 打印统计结果
+void print_political_count_by_class(Class_info *count)
+{
+    printf("班级：%s/n", count->class_number);
+    printf("中共党员：%d人 中共预备党员：%d人 共青团员：%d人 群众：%d人 其他：%d人\n", count->counts[0], count->counts[1], count->counts[2], count->counts[3], count->counts[4]);
 }

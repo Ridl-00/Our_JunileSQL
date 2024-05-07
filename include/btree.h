@@ -13,43 +13,45 @@
  */
 
 #define MAX_ORDER 3 
+typedef struct tm tm;
 
 typedef enum {
-    CPC_M,          /* 中共党员 */
-    P_CPC_M,        /* 中共预备党员 */
-    CYLC_M,         /* 共青团员 */
-    MASS,           /* 群众 */
-    OTHERS          /* 其他 */
+    CPC_M,          /* 0 中共党员 */
+    P_CPC_M,        /* 1 中共预备党员 */
+    CYLC_M,         /* 2 共青团员 */
+    MASS,           /* 3 群众 */
+    OTHERS,         /* 4 其他 */
+    COUNT
 } Political;
 
 typedef struct {
-    time_t join_time;
+    tm join_time;//入党时间
 } CPC_INFO; // 党员特征信息
 
 typedef struct {
-    time_t join_time;
-    time_t date_of_application;
-    bool is_recommended;
-    bool is_adult;
+    tm join_time;//加入时间
+    tm date_of_application;//申请日期
+    bool is_recommended;//是否被推荐
+    //有一个age数据记录年龄，无需判断是否成年
     bool is_training_finished;
 } CYLC_INFO; // 共青团员特征信息
 
 typedef struct {
-    bool is_sworn;
-    bool is_procedure_finished;
-    bool is_date_over;
+    bool is_sworn;//是否完成宣誓
+    bool is_date_over;//预备期是否已满
+    bool is_procedure_finished;//转正手续是否完成
 } P_CPC_INFO; // 预备党员特征信息
 
-typedef union {
-    CPC_INFO CPC_info;
+typedef union Feature_info{
+    CPC_INFO CCP_info;
     CYLC_INFO CYLC_info;
-    P_CPC_INFO P_CPC_M_info;
+    P_CPC_INFO P_CPC_info;
 } Feature_info;
 
 typedef struct {
     Political political; // 政治面貌
     int age;
-    char id[10];
+    int student_id;
     char name[50];
     char class_number[10];
     Feature_info info;
@@ -57,20 +59,17 @@ typedef struct {
 
 // 班级政治面貌统计
 typedef struct {
-    int CPC_M_count;
-    int P_CPC_M_count;
-    int CYLC_M_count;
-    int MASS_count;
-    int OTHERS_count;
-} PoliticalCount;
+    char class_number[10];
+    int counts[5];  /* [0 中共党员, 1 中共预备党员, 2 共青团员 , 3 群众 , 4 其他 */
+} Class_info;
 
 // 节点结构体
 typedef struct Node {
     bool is_leaf; // 是否是叶节点
     int num_keys; // 当前键的数量
     int keys[MAX_ORDER - 1]; // 存储键的数组（学号）
-    // void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
-    void ** pointers;
+    void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
+    // void ** pointers;
     // 如果是非叶节点为NULL
     StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
     struct Node *next; // 指向下一个叶节点的指针
@@ -80,13 +79,14 @@ typedef struct Node {
 typedef struct BPlusTree {
     Node *root; // 根节点
     int order;  // 树的顺序（最大和最小度）
+    FILE *file;
 } BPlusTree;
 
 
 
 /*
  * 以下为B+数的一些基本接口的函数原型
- * 具体实现位于b_plus.c文件中
+ * 具体实现位于btree.c文件中
  */
 
 
@@ -103,7 +103,7 @@ Node *new_node(bool is_leaf);
  * 创建一个新B+树
  * @param order: 指出新创建的B+树的阶数
  */
-BPlusTree *new_bplus_tree(int order);
+BPlusTree *new_bplus_tree(const char *filename, int order);
 /*
  * 搜索操作
  * search_in_node
@@ -120,6 +120,7 @@ Node *search(BPlusTree *tree, int key);
 /*
  * 插入操作
  */
+void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 
 void insert_into_leaf(Node *leaf, int key, StudentRecord record);
 
@@ -127,7 +128,6 @@ void insert(BPlusTree *tree, int key, StudentRecord record);
 
 void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree);
 
-void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 /*
  * 删除操作
  * delete_from_lea
@@ -135,7 +135,7 @@ void split_child(Node *parent, int index, Node *child, BPlusTree *tree);
 
 void delete_from_leaf(Node *leaf, int key);
 
-// void delete(BPlusTree *tree, int key);
+void delete_(BPlusTree *tree, int key);
 
 void delete_from_node(Node *node, int key, BPlusTree *tree);
 
@@ -150,10 +150,10 @@ void merge_children(Node *parent, int index);
  *统计操作
  */
 
-void analyze_class(char *class_number);
+void analyze_class(BPlusTree *tree, char *class_number);
 // 统计个数
-void count_political_by_class(Node *n, const char *class_number, PoliticalCount *count);
+void count_political_by_class(Node * const root, const char *class_number, Class_info *count);
 // 打印统计结果
-void print_political_count_by_class(BPlusTree *tree, const char *class_number);
+void print_political_count_by_class(Class_info *count);
 
 #endif
