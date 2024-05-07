@@ -12,14 +12,14 @@
 
 
 // 打印中共党员的记录
-static void print_cpc_member(StudentRecord *record) {
+static void print_cpc_member(const StudentRecord *record) {
     printf("中共党员: %s, Student_ID: %d, 加入时间: %d-%d-%d\n",
            record->name, record->student_id, record->info.CCP_info.join_time.tm_year + 1900,
            record->info.CCP_info.join_time.tm_mon + 1, record->info.CCP_info.join_time.tm_mday);
 }
 
 // 打印共青团员的记录
-static void print_cylc_member(StudentRecord *record) {
+static void print_cylc_member(const StudentRecord *record) {
     printf("共青团员: %s, Student_ID: %d, 加入时间: %d-%d-%d, 申请日期: %d-%d-%d\n",
            record->name, record->student_id, record->info.CYLC_info.join_time.tm_year + 1900,
            record->info.CYLC_info.join_time.tm_mon + 1, record->info.CYLC_info.join_time.tm_mday,
@@ -29,7 +29,7 @@ static void print_cylc_member(StudentRecord *record) {
 }
 
 // 打印预备党员的记录
-static void print_p_cpc_member(StudentRecord *record) {
+static void print_p_cpc_member(const StudentRecord *record) {
     printf("预备党员: %s, Student_ID: %d, 是否完成宣誓: %s, 是否完成转正手续: %s\n",
            record->name, record->student_id,
            record->info.P_CPC_info.is_sworn ? "是" : "否",
@@ -37,7 +37,7 @@ static void print_p_cpc_member(StudentRecord *record) {
 }
 
 // 打印其他政治面貌的记录
-static void print_others(StudentRecord *record) {
+static void print_others(const StudentRecord *record) {
     printf("其他: %s, Student_ID: %d\n", record->name, record->student_id);
 }
 
@@ -59,7 +59,7 @@ PrintFunction select_print_function(Political political) {
 }
 
 // 遍历B+树并打印所有记录
-void print_bplus_tree(BPlusTree *tree) {
+void print_bplus_tree(const BPlusTree *tree) {
     Node *current = tree->root;
     while (current) {
         for (int i = 0; i < current->num_keys; i++) {

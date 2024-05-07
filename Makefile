@@ -2,10 +2,10 @@ obj = clever.o print.o operating.o info_read.o btree.o buffer.o
 
 vpath %.h ./include/
 
-shit_db.out : $(obj)
-	gcc $(obj) -o shit_db.out
+db.out : $(obj) repo_dir
+	gcc $(obj) -o db.out
 
-clever.o :  buffer.h btree.h operating.h
+clever.o :  buffer.h btree.h operating.h 
 	gcc -I./include -c clever.c -o clever.o
 
 print.o : print.h btree.h btree.o
@@ -24,6 +24,12 @@ buffer.o : buffer.h
 	gcc -I./include -c buffer.c -o buffer.o
 
 
-.PHONY : clean
+
+.PHONY : clean repo_dir
 clean :
 	-rm -f *.o *.out
+
+repo_dir :
+	@if [ ! -d "./repo/" ]; then \
+		mkdir -p "./repo/"; \
+	fi

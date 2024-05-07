@@ -1,5 +1,6 @@
 #include <btree.h>
 #include <stdio.h>
+#include <buffer.h>
 #include <stdbool.h>
 #include <operating.h>
 #include <stdio.h>
@@ -7,6 +8,15 @@
 #include <string.h>
 
 #define MAX_ORDER 3
+#define ADD_FILENAME_LENGTH 6
+
+static char format_filename[MAX_FILENAME_LENGTH] = "";//用于统一文件路径便于管理文件
+
+
+
+static inline void trans_filename_format(const char *filename){
+    sprintf(format_filename, "./repo/%s", filename);
+}//将文件路径转变为./db/<filename>形式
 
 // 保存节点到文件
 static void save_node(FILE *file, Node *node) {
@@ -20,12 +30,13 @@ static void save_node(FILE *file, Node *node) {
 
 // 将B+树保存到文件
 void save_bplus_tree(BPlusTree *tree, const char *filename) {
-    FILE *file = fopen(filename, "wb");
+    trans_filename_format(filename);
+    FILE *file = fopen(format_filename, "wb");
     if (!file) {
         printf("无法打开文件进行写入操作\n");
         return;
     }
-    fwrite(&tree->order, sizeof(int), 1, file); // 写入树的顺序
+    fwrite(&tree->order, sizeof(int), 1, file);
     save_node(file, tree->root); // 保存根节点和所有子节点
     fclose(file);
 }
@@ -44,13 +55,14 @@ Node *load_node(FILE *file, int order) {
 
 // 从文件加载B+树
 BPlusTree *load_bplus_tree(const char *filename) {
-    FILE *file = fopen(filename, "rb");
+    trans_filename_format(filename);
+    FILE *file = fopen(format_filename, "rb+");
     if (!file) {
-        printf("无法打开文件进行读取操作\n");
+        printf("文件不存在或文件加载失败\n");
         return NULL;
     }
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
-    fread(&tree->order, sizeof(int), 1, file); // 读取树的顺序
+    fread(&tree->order, sizeof(int), 1, file); 
     tree->root = load_node(file, tree->order); // 加载根节点和所有子节点
     fclose(file);
     return tree;
@@ -73,16 +85,15 @@ StudentRecord *read_student_record(BPlusTree *tree, int key) {
     return NULL;
 }
 
-// 删除学生记录
 void delete_student_record(BPlusTree *tree, int key) {
     delete(tree, key);
 }
 
 extern BPlusTree *create_database(const char *filename, int order) {
+    trans_filename_format(filename);
     BPlusTree *tree = malloc(sizeof(BPlusTree));
-    tree->root = new_node(true); // 创建根节点
-    
-    tree->file = fopen(filename, "wb");
+    tree->root = new_node(true); 
+    tree->file = fopen(format_filename, "wb+");
     if (tree->file == NULL) {
         perror("Failed to open database file");
         free(tree);
@@ -97,8 +108,7 @@ extern BPlusTree *create_database(const char *filename, int order) {
     fwrite(tree->root->records, sizeof(StudentRecord), MAX_ORDER - 1, tree->file);
     fwrite(tree->root->children, sizeof(void *), MAX_ORDER, tree->file);
 
-    printf("数据库'%s'已经创建并被打开\n", filename);
-    // 关闭文件
+    printf("数据库'%s'已经创建\n", filename);
     fclose(tree->file);
 
     return tree;

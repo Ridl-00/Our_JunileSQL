@@ -1,6 +1,6 @@
 #include <btree.h>
 #include <print.h>
-#include <openacc.h>
+#include <info_read.h>
 #include <operating.h>
 #include <buffer.h>
 #include <stdbool.h>
@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-const size_t MAX_FILENAME_LENGTH = 11;
+bool save_flag = true;//记录数据改变是否被保存
+BPlusTree *current_tree = NULL;//记录当前被载入内存中的B+树root地址
+char current_filename[MAX_FILENAME_LENGTH];//记录当前打开的数据库文件名称
 
 typedef enum{
     
@@ -18,6 +20,7 @@ typedef enum{
     DELETE,
     OPEN,
     SHOW,
+    WRITE,
     COM_NUM,
     INVALID_INPUT
 
@@ -28,7 +31,12 @@ typedef enum {
     META_COMMAND_UNRECOGNIZED_COMMAND
 } MetaCommandResult;
 
-const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show"};
+const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show", ".write"};
+
+static void eat_line(void){
+    while(getchar() != '\n')
+        continue;
+}
 
 static char *f_fgets(char *buffer, int n, FILE *stream){
     char *ptr = fgets(buffer, n, stdin);
@@ -39,12 +47,10 @@ static char *f_fgets(char *buffer, int n, FILE *stream){
     return ptr;
 }
 
-static void eat_line(void){
-    while(getchar != '\n')
-        continue;
-}
-
-static void print_prompt() { printf("db > "); }
+static void help_prompt(void) { puts("使用'.exit'命令可退出程序"); };
+static void print_prompt(void) { printf("db/%s:> ", current_filename); }
+static void save_prompt(const char *filename) { printf("数据已被保存至 %s文件\n", filename); }
+static void wrong_format_prompt(void) { puts("错误的输入格式!"); };
 
 COMMANDS do_meta_command(char Buffer[]) {
 
@@ -63,10 +69,8 @@ COMMANDS do_meta_command(char Buffer[]) {
 
 
 int main(int argc, char* argv[]) {
-
-    BPlusTree *current_tree = NULL;
+    
     Buffer *input_buffer = new_buffer();
-    char current_filename[MAX_FILENAME_LENGTH];
     // FILE *InputFile, *OutputFile;
     // InputFile=fopen("example.csv", "r");
     // if (InputFile == NULL) {
@@ -85,12 +89,20 @@ int main(int argc, char* argv[]) {
         COMMANDS temp=do_meta_command(input_buffer->buffer);
         switch (temp){
             case (CREATE):
+            {
+                save_flag = false;
                 puts("输入数据库名称:");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
-                strncpy(current_filename, input_buffer->buffer, MAX_FILENAME_LENGTH);
-                current_tree = create_database(input_buffer->buffer, MAX_ORDER);
+                BPlusTree *temp = create_database(input_buffer->buffer, MAX_ORDER);
+                if(current_tree == NULL && temp != NULL){
+                    strncpy(current_filename, input_buffer->buffer, MAX_FILENAME_LENGTH);
+                    current_tree = temp;
+                }
                 continue;
+            }
             case (INSERT):
+            {
+                save_flag = false;
                 if(current_tree == NULL){
                     puts("你需要先打开数据库");
                     break;
@@ -100,38 +112,80 @@ int main(int argc, char* argv[]) {
                 print_prompt();
                 int temp_info = -1;
                 fgets(input_buffer->buffer, input_buffer->size, stdin);
-                StudentRecord *record = (StudentRecord *)malloc(sizeof(StudentRecord));
-                sscanf(input_buffer->buffer, "%d %d %s %s %d",&record->student_id, &record->age,
-                                                            record->name, record->class_number, 
+
+                StudentRecord record = {
+                    .student_id = -1,
+                    .class_number = "unknown",
+                    .name = "unknown",
+                    .age = -1
+                };
+
+                sscanf(input_buffer->buffer, "%d %d %s %s %d",&record.student_id, &record.age,
+                                                            record.name, record.class_number, 
                                                             &temp_info);
-                record->political = (Political)temp_info;
-                insert(current_tree, record->student_id, *record);
+                if(record.student_id == -1 || record.age == -1 || temp_info == -1){
+                    wrong_format_prompt();
+                    continue;
+                }
+                read_feature_info(&record);
+                insert_student_record(current_tree, record.student_id, record);
                 continue;
+            }
             case (DELETE):
+            {
+                save_flag = false;
                 puts("请输入被删除学生的学号");
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
-                    puts("错误的输入格式");
-                    eat_line();
+                    wrong_format_prompt();
+                    eat_line; 
                 }
-                eat_line();
                 delete_student_record(current_tree, key);
                 continue;
+            }
             case (OPEN):
+            {
                 puts("请输入要打开的数据库名称");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
-                strncpy(current_filename, input_buffer->buffer, MAX_FILENAME_LENGTH);
-                current_tree = load_bplus_tree(input_buffer->buffer);
+                BPlusTree *temp = load_bplus_tree(input_buffer->buffer);
+                if(temp != NULL){
+                    current_tree = temp;
+                    strncpy(current_filename, input_buffer->buffer, MAX_FILENAME_LENGTH);
+                }
                 continue;
+            }
             case (SHOW):
+            {
                 print_bplus_tree(current_tree);
-                printf("Received command: %d\n", temp);
                 continue;
+            }
+            case (WRITE):
+            {
+                save_flag = false;
+                if(current_tree == NULL){
+                    puts("写入失败");
+                    puts("当前未打开任意数据库。请先使用.open打开一个数据库");
+                    continue;
+                }
+                else{
+                    save_bplus_tree(current_tree, current_filename); 
+                    save_prompt(current_filename);
+                    continue;
+                }
+                continue;
+            }
             case (INVALID_INPUT):
                 printf("Unrecognized command '%s'\n", input_buffer->buffer);
                 continue;
             case (EXIT):
                 delete_buffer(input_buffer);
+                if(current_tree != NULL && !save_flag){
+                    puts("数据已被修改，是否保存做出的修改(y/n)");
+                    if(getchar() == 'y'){
+                        save_bplus_tree(current_tree, current_filename);
+                        save_prompt(current_filename);
+                    }
+                }
                 printf("Exiting the program.\n");
                 return 0;
         }

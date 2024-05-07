@@ -1,5 +1,4 @@
 #include <btree.h>
-#include <buffer.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
@@ -11,6 +10,12 @@
 
 typedef void (*InputFunction)(Feature_info *info);
 
+
+static void eat_line(void){
+    while(getchar() != '\n')
+        continue;
+}
+
 static char time_buffer[TIME_BUFFER_SIZE];
 static char bool_buffer[BOOL_BUFFER_SIZE];
 
@@ -18,6 +23,7 @@ static void read_time(struct tm *time_info) {
     printf("请输入时间 (格式: YYYY-MM-DD): ");
     fgets(time_buffer, TIME_BUFFER_SIZE, stdin);
     strptime(time_buffer, "%Y-%m-%d", time_info);
+    eat_line();
 }
 
 static bool read_bool(const char *prompt) {
