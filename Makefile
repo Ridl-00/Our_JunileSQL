@@ -29,8 +29,3 @@ buffer.o : buffer.h
 .PHONY : clean repo_dir
 clean :
 	-rm -f *.o *.out
-
-repo_dir :
-	@if [ ! -d "./repo/" ]; then \
-		mkdir -p "./repo/"; \
-	fi
