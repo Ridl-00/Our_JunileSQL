@@ -4,17 +4,20 @@
 #include <string.h>
 #include <stdbool.h>
 
+//create a new node
 Node *new_node(bool is_leaf) {
     Node *node = (Node *)malloc(sizeof(Node));
     node->is_leaf = is_leaf;
     node->num_keys = 0;
     node->next = NULL;
     memset(node->keys, 0, sizeof(node->keys));
-    memset(node->records, 0, sizeof(node->records));
-    memset(node->children, 0, sizeof(node->children));
+    if (is_leaf) {
+        memset(node->records, 0, sizeof(node->records));
+    } else {
+        memset(node->children, 0, sizeof(node->children));
+    }
     return node;
 }
-
 // 创建一个新的B+树
 BPlusTree *new_bplus_tree(const char *filename, int order) {
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
@@ -171,32 +174,54 @@ void delete(BPlusTree *tree, int key) {
 // 从节点中删除关键字
 void delete_from_node(Node *node, int key, BPlusTree *tree) {
     int index = search_in_node(node, key);
-    if (node->is_leaf) {
-        delete_from_leaf(node, key);
+    if (index < node->num_keys && node->keys[index] == key) {
+        if (node->is_leaf) {
+            delete_from_leaf(node, key);
+        } else {
+            Node *left_child = (Node *)node->children[index];
+            Node *right_child = (Node *)node->children[index + 1];
+            if (left_child->num_keys > tree->order / 2) {
+                Node *predecessor = left_child;
+                while (!predecessor->is_leaf) {
+                    predecessor = (Node *)predecessor->children[predecessor->num_keys];
+                }
+                int pred_key = predecessor->keys[predecessor->num_keys - 1];
+                StudentRecord pred_record = predecessor->records[predecessor->num_keys - 1];
+                node->keys[index] = pred_key;
+                delete_from_node(left_child, pred_key, tree);
+            } else if (right_child->num_keys > tree->order / 2) {
+                Node *successor = right_child;
+                while (!successor->is_leaf) {
+                    successor = (Node *)successor->children[0];
+                }
+                int succ_key = successor->keys[0];
+                StudentRecord succ_record = successor->records[0];
+                node->keys[index] = succ_key;
+                delete_from_node(right_child, succ_key, tree);
+            } else {
+                merge_children(node, index);
+                delete_from_node(left_child, key, tree);
+            }
+        }
     } else {
         Node *child = (Node *)node->children[index];
-        if (child->num_keys < (tree->order - 1) / 2) {
-            // 子节点的关键字数量不足，需要借用或合并
-            if (index > 0 && ((Node *)node->children[index - 1])->num_keys > (tree->order - 1) / 2) {
-                // 向左兄弟借用
+        if (child->num_keys == tree->order / 2) {
+            Node *left_sibling = index > 0 ? (Node *)node->children[index - 1] : NULL;
+            Node *right_sibling = index < node->num_keys ? (Node *)node->children[index + 1] : NULL;
+            if (left_sibling && left_sibling->num_keys > tree->order / 2) {
                 borrow_from_left(node, index);
-            } else if (index < node->num_keys && ((Node *)node->children[index + 1])->num_keys > (tree->order - 1) / 2) {
-                // 向右兄弟借用
+            } else if (right_sibling && right_sibling->num_keys > tree->order / 2) {
                 borrow_from_right(node, index);
-            } else {
-                // 合并子节点
-                if (index > 0) {
-                    merge_children(node, index - 1);
-                    index--;
-                } else {
-                    merge_children(node, index);
-                }
+            } else if (left_sibling) {
+                merge_children(node, index - 1);
+                child = left_sibling;
+            } else if (right_sibling) {
+                merge_children(node, index);
             }
         }
         delete_from_node(child, key, tree);
     }
 }
-
 // 从左兄弟借用
 void borrow_from_left(Node *parent, int index) {
     Node *child = (Node *)parent->children[index];
