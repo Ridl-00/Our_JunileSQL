@@ -6,6 +6,7 @@
 #include <time.h>
 #include <string.h>
 #include <strings.h>
+#include <mystrptime.h>
 
 #define TIME_BUFFER_SIZE 11
 #define BOOL_BUFFER_SIZE 4
@@ -18,7 +19,7 @@ static char bool_buffer[BOOL_BUFFER_SIZE];
 static void read_time(struct tm *time_info) {
     printf("请输入时间 (格式: YYYY-MM-DD): ");
     fgets(time_buffer, TIME_BUFFER_SIZE, stdin);
-    strptime(time_buffer, "%Y-%m-%d", time_info);
+    mystrptime(time_buffer, "%Y-%m-%d", time_info);
 }
 
 static bool read_bool(const char *prompt) {

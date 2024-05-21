@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mystrptime.h>
+
 
 const size_t MAX_FILENAME_LENGTH = 11;
 
@@ -17,7 +19,9 @@ typedef enum{
     INSERT,
     DELETE,
     OPEN,
-    SHOW,
+    SHOW,// 展示完整数据库，按班级统计学生政治面貌信息
+    SEARCH,// 按学号查询学生信息，同时输出是否有推优资格（团员）/转正资格（预备党员）
+    CHANGE,// 改变某一学生信息
     COM_NUM,
     INVALID_INPUT
 
@@ -28,7 +32,7 @@ typedef enum {
     META_COMMAND_UNRECOGNIZED_COMMAND
 } MetaCommandResult;
 
-const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show"};
+const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show", ".search", ".change"};
 
 static char *f_fgets(char *buffer, int n, FILE *stream){
     char *ptr = fgets(buffer, n, stdin);
@@ -89,7 +93,7 @@ int main(int argc, char* argv[]) {
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
                 strncpy(current_filename, input_buffer->buffer, MAX_FILENAME_LENGTH);
                 current_tree = create_database(input_buffer->buffer, MAX_ORDER);
-                continue;
+                break;
             case (INSERT):
                 if(current_tree == NULL){
                     puts("你需要先打开数据库");
@@ -106,7 +110,7 @@ int main(int argc, char* argv[]) {
                                                             &temp_info);
                 record->political = (Political)temp_info;
                 insert(current_tree, record->student_id, *record);
-                continue;
+                break;
             case (DELETE):
                 puts("请输入被删除学生的学号");
                 int key = -1; 
@@ -116,7 +120,7 @@ int main(int argc, char* argv[]) {
                 }
                 eat_line();
                 delete_student_record(current_tree, key);
-                continue;
+                break;
             case (OPEN):
                 puts("请输入要打开的数据库名称");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
@@ -126,14 +130,66 @@ int main(int argc, char* argv[]) {
             case (SHOW):
                 print_bplus_tree(current_tree);
                 // printf("Received command: %d\n", temp);
-                printf("Input Class ID");
+                puts("请输入要查询的班级号");
                 char class_number[10];
                 fgets(class_number, sizeof(class_number), stdin);
                 analyze_class(current_tree, class_number);
-                continue;
+                break;
+            case (SEARCH):
+                puts("请输入要查询的学生学号");
+                key = -1; 
+                while(scanf("%d", &key) != 1){
+                    puts("错误的输入格式");
+                    eat_line();
+                }
+                eat_line();
+                Node *cur=search(current_tree, key);
+                int index=search_in_node(cur, key);
+                puts("当前查询的学生信息为");
+                print_record(&cur->records[index]);
+                break;
+            case (CHANGE):
+                puts("请输入要修改的学生的学号");
+                key = -1; 
+                while(scanf("%d", &key) != 1){
+                    puts("错误的输入格式");
+                    eat_line();
+                }
+                eat_line();
+
+                Node *cur2=search(current_tree, key);
+                int index2=search_in_node(cur2, key);
+                puts("当前要修改的学生信息为");
+                print_record(&cur2->records[index2]);
+
+                puts("请输入修改类型编号");
+                printf("<姓名>:1, <班级>:2, <年龄>:3, <政治面貌>:4, <政治信息>:5 (学号不可修改)");
+                int order;
+                while(scanf("%d", &order) != 1){
+                    puts("错误的输入格式");
+                    eat_line();
+                }
+                switch (order){
+                    case 1:
+                    case 2:
+                    case 3:
+                        change_record_info(&cur->records[index2], order);
+                        break;
+                    case 4:
+                        change_record_politaical(&cur->records[index2]);
+                        break;
+                    case 5:
+                        change_record_poli_info(&cur->records[index2]);
+                    default:
+                        puts("无法识别的编号");
+                        break;
+                }
+                puts("修改后的学生信息为");
+                print_record(&cur->records[index2]);
+                break;
             case (INVALID_INPUT):
                 printf("Unrecognized command '%s'\n", input_buffer->buffer);
-                continue;
+                break;
             case (EXIT):
                 delete_buffer(input_buffer);
                 printf("Exiting the program.\n");

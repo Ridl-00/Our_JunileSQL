@@ -29,7 +29,7 @@ typedef struct {
 } CPC_INFO; // 党员特征信息
 
 typedef struct {
-    tm join_time;//加入时间
+    tm join_time;//加入共青团时间
     tm date_of_application;//申请日期
     bool is_recommended;//是否被推荐
     //有一个age数据记录年龄，无需判断是否成年
@@ -130,7 +130,6 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
 
 /*
  * 删除操作
- * delete_from_lea
  */
 
 void delete_from_leaf(Node *leaf, int key);
@@ -145,15 +144,5 @@ void borrow_from_right(Node *parent, int index);
 
 void merge_children(Node *parent, int index);
 
-
-/*
- *统计操作
- */
-
-void analyze_class(BPlusTree *tree, char *class_number);
-// 统计个数
-void count_political_by_class(Node * const root, const char *class_number, Class_info *count);
-// 打印统计结果
-void print_political_count_by_class(Class_info *count);
 
 #endif

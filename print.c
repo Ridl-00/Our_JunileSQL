@@ -71,8 +71,7 @@ void print_bplus_tree(BPlusTree *tree) {
 	}
     while (current) {
         for (int i = 0; i < current->num_keys; i++) {
-            PrintFunction print_function = select_print_function(current->records[i].political);
-            print_function(&current->records[i]);
+            print_record(&current->records[i]);
         }
         // 如果是叶节点，则跳到下一个叶节点
         if (current->is_leaf) {
@@ -82,4 +81,10 @@ void print_bplus_tree(BPlusTree *tree) {
             current = (Node *)current->children[0];
         }
     }
+}
+
+void print_record(StudentRecord *record)
+{
+    PrintFunction print_function = select_print_function(record->political);
+    print_function(record);
 }
