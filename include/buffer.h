@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#define MAX_FILENAME_LENGTH 11
 #define BUFFER_SIZE 100
 typedef struct 
 {

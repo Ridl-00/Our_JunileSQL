@@ -1,6 +1,5 @@
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #include <btree.h>
-#include <buffer.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
@@ -9,9 +8,15 @@
 #include <mystrptime.h>
 
 #define TIME_BUFFER_SIZE 11
-#define BOOL_BUFFER_SIZE 4
+#define BOOL_BUFFER_SIZE 10
 
 typedef void (*InputFunction)(Feature_info *info);
+
+
+static void eat_line(void){
+    while(getchar() != '\n')
+        continue;
+}
 
 static char time_buffer[TIME_BUFFER_SIZE];
 static char bool_buffer[BOOL_BUFFER_SIZE];
@@ -20,6 +25,7 @@ static void read_time(struct tm *time_info) {
     printf("请输入时间 (格式: YYYY-MM-DD): ");
     fgets(time_buffer, TIME_BUFFER_SIZE, stdin);
     mystrptime(time_buffer, "%Y-%m-%d", time_info);
+    eat_line();
 }
 
 static bool read_bool(const char *prompt) {
@@ -40,12 +46,13 @@ static bool read_bool(const char *prompt) {
 
 static void read_cpc_info(Feature_info *info) {
     
-    printf("输入学生相关信息：\n");
+    printf("输入学生入党时间：\n");
     read_time(&info->CCP_info.join_time);
 }
 
 static void read_cylc_info(Feature_info *info) {
     printf("输入学生相关信息\n");
+    puts("请输入学生的入团时间");
     read_time(&info->CYLC_info.join_time);
     printf("请输入提交入党申请的申请日期：\n");
     read_time(&info->CYLC_info.date_of_application);
