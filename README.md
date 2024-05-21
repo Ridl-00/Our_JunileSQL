@@ -26,3 +26,8 @@ bash shell
 6. .write 
 
 输入此命令后, 程序会将修改写入对应的二进制文件保存
+
+7. .search
+
+8. .change
+

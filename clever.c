@@ -10,21 +10,21 @@
 #include <mystrptime.h>
 
 
-bool save_flag = true;//è®°å½•æ•°æ®æ”¹å˜æ˜¯å¦è¢«ä¿å­˜
-BPlusTree *current_tree = NULL;//è®°å½•å½“å‰è¢«è½½å…¥å†…å­˜ä¸­çš„B+æ ‘rootåœ°å€
-char current_filename[MAX_FILENAME_LENGTH];//è®°å½•å½“å‰æ‰“å¼€çš„æ•°æ®åº“æ–‡ä»¶åç§°
+bool save_flag = true;//¼ÇÂ¼Êı¾İ¸Ä±äÊÇ·ñ±»±£´æ
+BPlusTree *current_tree = NULL;//¼ÇÂ¼µ±Ç°±»ÔØÈëÄÚ´æÖĞµÄB+Ê÷rootµØÖ·
+char current_filename[MAX_FILENAME_LENGTH];//¼ÇÂ¼µ±Ç°´ò¿ªµÄÊı¾İ¿âÎÄ¼şÃû³Æ
 
 typedef enum{
     
-    EXIT,//é€€å‡ºæ•°æ®åº“
-    CREATE,//å‘½ä»¤åæºå¸¦ä¸€ä¸ªfilenameå‚æ•°ï¼Œä»¥filenameä¸ºååˆ›å»ºä¸€ä¸ªæ•°æ®åº“
+    EXIT,//ÍË³öÊı¾İ¿â
+    CREATE,//ÃüÁîºóĞ¯´øÒ»¸öfilename²ÎÊı£¬ÒÔfilenameÎªÃû´´½¨Ò»¸öÊı¾İ¿â
     INSERT,
     DELETE,
     OPEN,
-    SHOW,// å±•ç¤ºå®Œæ•´æ•°æ®åº“ï¼ŒæŒ‰ç­çº§ç»Ÿè®¡å­¦ç”Ÿæ”¿æ²»é¢è²Œä¿¡æ¯
+    SHOW,// Õ¹Ê¾ÍêÕûÊı¾İ¿â£¬°´°à¼¶Í³¼ÆÑ§ÉúÕşÖÎÃæÃ²ĞÅÏ¢
     WRITE,
-    SEARCH,// æŒ‰å­¦å·æŸ¥è¯¢å­¦ç”Ÿä¿¡æ¯ï¼ŒåŒæ—¶è¾“å‡ºæ˜¯å¦æœ‰æ¨ä¼˜èµ„æ ¼ï¼ˆå›¢å‘˜ï¼‰/è½¬æ­£èµ„æ ¼ï¼ˆé¢„å¤‡å…šå‘˜ï¼‰
-    CHANGE,// æ”¹å˜æŸä¸€å­¦ç”Ÿä¿¡æ¯
+    SEARCH,// °´Ñ§ºÅ²éÑ¯Ñ§ÉúĞÅÏ¢£¬Í¬Ê±Êä³öÊÇ·ñÓĞÍÆÓÅ×Ê¸ñ£¨ÍÅÔ±£©/×ªÕı×Ê¸ñ£¨Ô¤±¸µ³Ô±£©
+    CHANGE,// ¸Ä±äÄ³Ò»Ñ§ÉúĞÅÏ¢
     COM_NUM,
     INVALID_INPUT
 
@@ -46,16 +46,16 @@ static char *f_fgets(char *buffer, int n, FILE *stream){
     char *ptr = fgets(buffer, n, stdin);
     size_t len = strlen(buffer);
     if (len > 0 && buffer[len - 1] == '\n') {
-        buffer[len - 1] = '\0'; // ç§»é™¤æ¢è¡Œç¬¦
+        buffer[len - 1] = '\0'; // ÒÆ³ı»»ĞĞ·û
     }
     return ptr;
 }
 
 
-static void help_prompt(void) { puts("ä½¿ç”¨'.exit'å‘½ä»¤å¯é€€å‡ºç¨‹åº"); };
+static void help_prompt(void) { puts("Ê¹ÓÃ'.exit'ÃüÁî¿ÉÍË³ö³ÌĞò"); };
 static void print_prompt(void) { printf("db/%s:> ", current_filename); }
-static void save_prompt(const char *filename) { printf("æ•°æ®å·²è¢«ä¿å­˜è‡³ %sæ–‡ä»¶\n", filename); }
-static void wrong_format_prompt(void) { puts("é”™è¯¯çš„è¾“å…¥æ ¼å¼!"); };
+static void save_prompt(const char *filename) { printf("Êı¾İÒÑ±»±£´æÖÁ %sÎÄ¼ş\n", filename); }
+static void wrong_format_prompt(void) { puts("´íÎóµÄÊäÈë¸ñÊ½!"); };
 
 
 COMMANDS do_meta_command(char Buffer[]) {
@@ -68,7 +68,7 @@ COMMANDS do_meta_command(char Buffer[]) {
         }
     }
     if (!Valid_Input){
-        // å¦‚æœä¸æ˜¯è¯†åˆ«çš„å‘½ä»¤ï¼Œåˆ™è¿”å›ä¸€ä¸ªé”™è¯¯ç 
+        // Èç¹û²»ÊÇÊ¶±ğµÄÃüÁî£¬Ôò·µ»ØÒ»¸ö´íÎóÂë
         return INVALID_INPUT;
     }
 }
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
             case (CREATE):
             {
                 save_flag = false;
-                puts("è¾“å…¥æ•°æ®åº“åç§°:");
+                puts("ÊäÈëÊı¾İ¿âÃû³Æ:");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
                 BPlusTree *temp = create_database(input_buffer->buffer, MAX_ORDER);
                 if(current_tree == NULL && temp != NULL){
@@ -110,12 +110,11 @@ int main(int argc, char* argv[]) {
             {
                 save_flag = false;
                 if(current_tree == NULL){
-                    puts("ä½ éœ€è¦å…ˆæ‰“å¼€æ•°æ®åº“");
+                    puts("ÄãĞèÒªÏÈ´ò¿ªÊı¾İ¿â");
                     break;
                 }
-                printf("è¯·ä»¥ <Student_ID> <Age> <Name> <Class Number> <Political> æ ¼å¼è¾“å…¥å­¦ç”Ÿä¿¡æ¯\n");
-                printf("( <Political>å‚æ•°å¯é€‰ï¼š <å…šå‘˜>ã€<é¢„å¤‡å…šå‘˜>ã€<å›¢å‘˜>ã€<ç¾¤ä¼—> å’Œ <å…¶ä»–> åˆ†åˆ«ç”¨: 0 , 1, 2, 3, 4 5 æ›¿ä»£) \n");
-                print_prompt();
+                printf("ÇëÒÔ <Student_ID> <Age> <Name> <Class Number> <Political> ¸ñÊ½ÊäÈëÑ§ÉúĞÅÏ¢\n");
+                printf("( <Political>²ÎÊı¿ÉÑ¡£º <µ³Ô±>¡¢<Ô¤±¸µ³Ô±>¡¢<ÍÅÔ±>¡¢<ÈºÖÚ> ºÍ <ÆäËû> ·Ö±ğÓÃ: 0 , 1, 2, 3, 4 5 Ìæ´ú) \n");                print_prompt();
                 int temp_info = -1;
                 fgets(input_buffer->buffer, input_buffer->size, stdin);
 
@@ -141,7 +140,7 @@ int main(int argc, char* argv[]) {
             case (DELETE):
             {
                 save_flag = false;
-                puts("è¯·è¾“å…¥è¢«åˆ é™¤å­¦ç”Ÿçš„å­¦å·");
+                puts("ÇëÊäÈë±»É¾³ıÑ§ÉúµÄÑ§ºÅ");
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
                     wrong_format_prompt();
@@ -152,7 +151,7 @@ int main(int argc, char* argv[]) {
             }
             case (OPEN):
             {
-                puts("è¯·è¾“å…¥è¦æ‰“å¼€çš„æ•°æ®åº“åç§°");
+                puts("ÇëÊäÈëÒª´ò¿ªµÄÊı¾İ¿âÃû³Æ");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
                 BPlusTree *temp = load_bplus_tree(input_buffer->buffer);
                 if(temp != NULL){
@@ -165,7 +164,7 @@ int main(int argc, char* argv[]) {
             {
                 if(current_tree != NULL){
                     print_bplus_tree(current_tree);
-                    puts("è¯·è¾“å…¥è¦æŸ¥è¯¢çš„ç­çº§å·");
+                    puts("ÇëÊäÈëÒª²éÑ¯µÄ°à¼¶ºÅ");
                     char class_number[10];
                     fgets(class_number, sizeof(class_number), stdin);
                     analyze_class(current_tree, class_number);
@@ -176,8 +175,8 @@ int main(int argc, char* argv[]) {
             {
                 save_flag = false;
                 if(current_tree == NULL){
-                    puts("å†™å…¥å¤±è´¥");
-                    puts("å½“å‰æœªæ‰“å¼€ä»»æ„æ•°æ®åº“ã€‚è¯·å…ˆä½¿ç”¨.openæ‰“å¼€ä¸€ä¸ªæ•°æ®åº“");
+                    puts("Ğ´ÈëÊ§°Ü");
+                    puts("µ±Ç°Î´´ò¿ªÈÎÒâÊı¾İ¿â¡£ÇëÏÈÊ¹ÓÃ.open´ò¿ªÒ»¸öÊı¾İ¿â");
                     continue;
                 }
                 else{
@@ -187,37 +186,37 @@ int main(int argc, char* argv[]) {
                 }
                 continue;
             case (SEARCH):
-                puts("è¯·è¾“å…¥è¦æŸ¥è¯¢çš„å­¦ç”Ÿå­¦å·");
+                puts("è¯·è¾“å…¥è¦æŸ¥è¯¢çš„å­¦ç”Ÿå­¦å?");
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
-                    puts("é”™è¯¯çš„è¾“å…¥æ ¼å¼");
+                    puts("µ±Ç°²éÑ¯µÄÑ§ÉúĞÅÏ¢Îª");
                     eat_line();
                 }
                 eat_line();
                 Node *cur=search(current_tree, key);
                 int index=search_in_node(cur, key);
-                puts("å½“å‰æŸ¥è¯¢çš„å­¦ç”Ÿä¿¡æ¯ä¸º");
+                puts("µ±Ç°²éÑ¯µÄÑ§ÉúĞÅÏ¢Îª");
                 print_record(&cur->records[index]);
                 break;
             case (CHANGE):
-                puts("è¯·è¾“å…¥è¦ä¿®æ”¹çš„å­¦ç”Ÿçš„å­¦å·");
+                puts("ÇëÊäÈëÒªĞŞ¸ÄµÄÑ§ÉúµÄÑ§ºÅ");
                 key = -1; 
                 while(scanf("%d", &key) != 1){
-                    puts("é”™è¯¯çš„è¾“å…¥æ ¼å¼");
+                    puts("´íÎóµÄÊäÈë¸ñÊ½");
                     eat_line();
                 }
                 eat_line();
 
                 Node *cur2=search(current_tree, key);
                 int index2=search_in_node(cur2, key);
-                puts("å½“å‰è¦ä¿®æ”¹çš„å­¦ç”Ÿä¿¡æ¯ä¸º");
+                puts("µ±Ç°ÒªĞŞ¸ÄµÄÑ§ÉúĞÅÏ¢Îª");
                 print_record(&cur2->records[index2]);
 
-                puts("è¯·è¾“å…¥ä¿®æ”¹ç±»å‹ç¼–å·");
-                printf("<å§“å>:1, <ç­çº§>:2, <å¹´é¾„>:3, <æ”¿æ²»é¢è²Œ>:4, <æ”¿æ²»ä¿¡æ¯>:5 (å­¦å·ä¸å¯ä¿®æ”¹)");
+                puts("ÇëÊäÈëĞŞ¸ÄÀàĞÍ±àºÅ");
+                printf("<ĞÕÃû>:1, <°à¼¶>:2, <ÄêÁä>:3, <ÕşÖÎÃæÃ²>:4, <ÕşÖÎĞÅÏ¢>:5 (Ñ§ºÅ²»¿ÉĞŞ¸Ä)");
                 int order;
                 while(scanf("%d", &order) != 1){
-                    puts("é”™è¯¯çš„è¾“å…¥æ ¼å¼");
+                    puts("´íÎóµÄÊäÈë¸ñÊ½");
                     eat_line();
                 }
                 switch (order){
@@ -232,10 +231,10 @@ int main(int argc, char* argv[]) {
                     case 5:
                         change_record_poli_info(&cur->records[index2]);
                     default:
-                        puts("æ— æ³•è¯†åˆ«çš„ç¼–å·");
+                        puts("ÎŞ·¨Ê¶±ğµÄ±àºÅ");
                         break;
                 }
-                puts("ä¿®æ”¹åçš„å­¦ç”Ÿä¿¡æ¯ä¸º");
+                puts("ĞŞ¸ÄºóµÄÑ§ÉúĞÅÏ¢Îª");
                 print_record(&cur->records[index2]);
                 continue;
             }
@@ -245,7 +244,7 @@ int main(int argc, char* argv[]) {
             case (EXIT):
                 delete_buffer(input_buffer);
                 if(current_tree != NULL && !save_flag){
-                    puts("æ•°æ®å·²è¢«ä¿®æ”¹ï¼Œæ˜¯å¦ä¿å­˜åšå‡ºçš„ä¿®æ”¹(y/n)");
+                    puts("Êı¾İÒÑ±»ĞŞ¸Ä£¬ÊÇ·ñ±£´æ×ö³öµÄĞŞ¸Ä(y/n)");
                     if(getchar() == 'y'){
                         save_bplus_tree(current_tree, current_filename);
                         save_prompt(current_filename);
