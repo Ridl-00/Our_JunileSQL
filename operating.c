@@ -9,16 +9,18 @@
 
 #define MAX_ORDER 3
 #define ADD_FILENAME_LENGTH 6
+#define POLITICAL_NUM 5
+#define MAX_CLASS_NUMBER 50
 
-static char format_filename[MAX_FILENAME_LENGTH] = "";//ç”¨äºç»Ÿä¸€æ–‡ä»¶è·¯å¾„ä¾¿äºç®¡ç†æ–‡ä»¶
+static char format_filename[MAX_FILENAME_LENGTH] = "";//ÓÃÓÚÍ³Ò»ÎÄ¼şÂ·¾¶±ãÓÚ¹ÜÀíÎÄ¼ş
 
 
 
 static inline void trans_filename_format(const char *filename){
     sprintf(format_filename, "./repo/%s", filename);
-}//å°†æ–‡ä»¶è·¯å¾„è½¬å˜ä¸º./db/<filename>å½¢å¼
+}//½«ÎÄ¼şÂ·¾¶×ª±äÎª./db/<filename>ĞÎÊ½
 
-// ä¿å­˜èŠ‚ç‚¹åˆ°æ–‡ä»¶
+// ±£´æ½Úµãµ½ÎÄ¼ş
 static void save_node(FILE *file, Node *node) {
     fwrite(node, sizeof(Node), 1, file);
     if (!node->is_leaf) {
@@ -28,20 +30,20 @@ static void save_node(FILE *file, Node *node) {
     }
 }
 
-// å°†B+æ ‘ä¿å­˜åˆ°æ–‡ä»¶
+// ½«B+Ê÷±£´æµ½ÎÄ¼ş
 void save_bplus_tree(BPlusTree *tree, const char *filename) {
     trans_filename_format(filename);
     FILE *file = fopen(format_filename, "wb");
     if (!file) {
-        printf("æ— æ³•æ‰“å¼€æ–‡ä»¶è¿›è¡Œå†™å…¥æ“ä½œ\n");
+        printf("ÎŞ·¨´ò¿ªÎÄ¼ş½øĞĞĞ´Èë²Ù×÷\n");
         return;
     }
     fwrite(&tree->order, sizeof(int), 1, file);
-    save_node(file, tree->root); // ä¿å­˜æ ¹èŠ‚ç‚¹å’Œæ‰€æœ‰å­èŠ‚ç‚¹
+    save_node(file, tree->root); // ±£´æ¸ù½ÚµãºÍËùÓĞ×Ó½Úµã
     fclose(file);
 }
 
-// ä»æ–‡ä»¶è¯»å–èŠ‚ç‚¹
+// ´ÓÎÄ¼ş¶ÁÈ¡½Úµã
 Node *load_node(FILE *file, int order) {
     Node *node = (Node *)malloc(sizeof(Node));
     fread(node, sizeof(Node), 1, file);
@@ -53,27 +55,27 @@ Node *load_node(FILE *file, int order) {
     return node;
 }
 
-// ä»æ–‡ä»¶åŠ è½½B+æ ‘
+// ´ÓÎÄ¼ş¼ÓÔØB+Ê÷
 BPlusTree *load_bplus_tree(const char *filename) {
     trans_filename_format(filename);
     FILE *file = fopen(format_filename, "rb+");
     if (!file) {
-        printf("æ–‡ä»¶ä¸å­˜åœ¨æˆ–æ–‡ä»¶åŠ è½½å¤±è´¥\n");
+        printf("ÎÄ¼ş²»´æÔÚ»òÎÄ¼ş¼ÓÔØÊ§°Ü\n");
         return NULL;
     }
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
     fread(&tree->order, sizeof(int), 1, file); 
-    tree->root = load_node(file, tree->order); // åŠ è½½æ ¹èŠ‚ç‚¹å’Œæ‰€æœ‰å­èŠ‚ç‚¹
+    tree->root = load_node(file, tree->order);  // ¼ÓÔØ¸ù½ÚµãºÍËùÓĞ×Ó½Úµã
     fclose(file);
     return tree;
 }
 
-// æ’å…¥å­¦ç”Ÿè®°å½•
+// ²åÈëÑ§Éú¼ÇÂ¼
 void insert_student_record(BPlusTree *tree, int key, StudentRecord record) {
     insert(tree, key, record);
 }
 
-// è¯»å–å­¦ç”Ÿè®°å½•
+// ¶ÁÈ¡Ñ§Éú¼ÇÂ¼
 StudentRecord *read_student_record(BPlusTree *tree, int key) {
     Node *leaf = search(tree, key);
     if (leaf != NULL) {
@@ -89,6 +91,175 @@ void delete_student_record(BPlusTree *tree, int key) {
     delete_(tree, key);
 }
 
+void analyze_grade(BPlusTree *tree, char *grade)
+{
+    char class_list[MAX_CLASS_NUMBER][10];
+    int grade_info[MAX_CLASS_NUMBER][5]={{0}};
+    Node *root = tree->root;
+
+    count_political_by_grade(root, grade, grade_info, class_list);
+    print_political_count_by_grade(grade, grade_info, class_list);
+}
+// Í³¼ÆÄê¼¶ÖĞÃ¿¸ö°à¼¶³ÉÔ±ÕşÖÎÃæÃ²ĞÅÏ¢
+void count_political_by_grade(Node * const root, const char *grade, int grade_info[][POLITICAL_NUM], char (*class_list)[10])
+{
+	if (root == NULL) {
+		printf("Empty tree.\n");
+		return;
+	}
+
+    // ³õÊ¼»¯class_info
+    for(int i=0;i<MAX_CLASS_NUMBER;i++){
+        strcpy(class_list[i], "empty");
+    }
+
+	int i, j;
+    char record_grade[4];
+	Node * c = root;
+	while (!c->is_leaf)
+		c = c->children[0];
+	while (true) {
+		for (i = 0; i < c->num_keys; i++) {
+            sscanf(c->records[i].class_number, "%*4s%2s", record_grade);
+            int find_flag=0, j=0;
+            if (strcmp(grade, record_grade)==0){
+                while (j<MAX_CLASS_NUMBER && strcmp(class_list[j], "empty")!=0){
+                    if (strcmp(class_list[j], c->records[i].class_number)==0){
+                        grade_info[j][c->records[i].political] += 1;
+                        find_flag=1;
+                        break;
+                    }
+                    j++;
+                }
+                if(j<MAX_CLASS_NUMBER && (!find_flag)){
+                    strcpy(class_list[j], c->records[i].class_number);
+                    grade_info[j][c->records[i].political] += 1;
+                }
+            }
+		}
+        if (c->next!=NULL){
+            c=c->next;
+        }
+		else
+			break;
+	}
+
+
+}
+
+void print_political_count_by_grade(const char *grade, int grade_info[][POLITICAL_NUM], char (*class_list)[10])
+{
+    printf("Äê¼¶£º%s\n", grade);
+    int i=0;
+    while(i<MAX_CLASS_NUMBER && strcmp(class_list[i], "empty")!=0){
+        printf("°à¼¶£º%s    ", class_list[i]);
+        printf("ÖĞ¹²µ³Ô±£º%dÈË ÖĞ¹²Ô¤±¸µ³Ô±£º%dÈË ¹²ÇàÍÅÔ±£º%dÈË ÈºÖÚ£º%dÈË ÆäËû£º%dÈË\n", grade_info[i][0], grade_info[i][1], grade_info[i][2], grade_info[i][3], grade_info[i][4]);
+        i++;
+    }
+    if(i==0){
+        puts("´ËÄê¼¶Ã»ÓĞ°à¼¶ĞÅÏ¢");
+    }
+    return;
+
+}
+
+
+
+// Í³¼Æ°à¼¶ĞÅÏ¢
+void analyze_class(BPlusTree *tree, char *class_number)
+{
+    Class_info *count = (Class_info *)malloc(sizeof(Class_info));
+    Node *root = tree->root;
+    
+    count_political_by_class(root, class_number, count);
+    print_political_count_by_class(count);
+}
+// Í³¼Æ°à¼¶¸÷¸öÕşÖÎÃæÃ²³ÉÔ±¸öÊı
+void count_political_by_class(Node * const root, const char *class_number, Class_info *count)
+{
+	if (root == NULL) {
+		printf("Empty tree.\n");
+		return;
+	}
+    // ³õÊ¼»¯Class_info½á¹¹Ìå
+    strcpy(count->class_number, class_number);
+    for (int i=0;i<5;i++){
+        count->counts[i]=0;
+    }
+
+	int i;
+	Node * c = root;
+	while (!c->is_leaf)
+		c = c->children[0];
+	while (true) {
+		for (i = 0; i < c->num_keys; i++) {
+            if (strcmp(class_number, c->records[i].class_number)==0){
+                count->counts[c->records[i].political]++;
+            }
+		}
+		// if (c->children[MAX_ORDER - 1] != NULL) {
+		// 	c = c->children[MAX_ORDER - 1];
+		// }
+        if (c->next!=NULL){
+            c=c->next;
+        }
+		else
+			break;
+	}
+}
+// ´òÓ¡Í³¼Æ½á¹û
+void print_political_count_by_class(Class_info *count)
+{
+    if(count->counts[0]==0 && count->counts[1]==0 && count->counts[2]==0 && count->counts[3]==0 && count->counts[4]==0){
+        puts("´Ë°à¼¶ÎŞ³ÉÔ±ĞÅÏ¢");
+        return;
+    }
+    printf("°à¼¶£º%s    ", count->class_number);
+    printf("ÖĞ¹²µ³Ô±£º%dÈË ÖĞ¹²Ô¤±¸µ³Ô±£º%dÈË ¹²ÇàÍÅÔ±£º%dÈË ÈºÖÚ£º%dÈË ÆäËû£º%dÈË\n", count->counts[0], count->counts[1], count->counts[2], count->counts[3], count->counts[4]);
+    return;
+}
+// ĞŞ¸Ä¼ÇÂ¼»ù±¾ĞÅÏ¢
+void change_record_info(StudentRecord *record, int order)
+{
+    if(order==1){
+        puts("ÇëÊäÈëĞÂµÄĞÕÃû");
+        char newname[50];
+        scanf("%s", newname);
+        strcpy(record->name, newname);
+    }
+    else if(order==2){
+        puts("ÇëÊäÈëĞÂµÄ°à¼¶");
+        char newclass[10];
+        scanf("%s", newclass);
+        strcpy(record->class_number, newclass);
+    }
+    else if(order==3){
+        puts("ÇëÊäÈëĞÂµÄÄêÁä");
+        scanf("%d", &record->age);
+    }
+
+    return;
+}
+// ĞŞ¸Ä¼ÇÂ¼ÕşÖÎÃæÃ²
+void change_record_politaical(StudentRecord *record)
+{
+    puts("ÇëÊäÈëĞÂµÄÕşÖÎÃæÃ²");
+    printf("( <Political>²ÎÊı¿ÉÑ¡£º <µ³Ô±>¡¢<Ô¤±¸µ³Ô±>¡¢<ÍÅÔ±>¡¢<ÈºÖÚ> ºÍ <ÆäËû> ·Ö±ğÓÃ: 0 , 1, 2, 3, 4 5 Ìæ´ú) \n");
+    int newpoli;
+    scanf("%d", &newpoli);
+    record->political=newpoli;
+    read_feature_info(record);
+    return;
+}
+// ĞŞ¸Ä¼ÇÂ¼ÕşÖÎĞÅÏ¢
+void change_record_poli_info(StudentRecord *record)
+{
+    puts("ÇëÊäÈëĞÂµÄÕşÖÎÃæÃ²ĞÅÏ¢");
+    read_feature_info(record);
+    return;
+}
+
+
 extern BPlusTree *create_database(const char *filename, int order) {
     trans_filename_format(filename);
     BPlusTree *tree = malloc(sizeof(BPlusTree));
@@ -100,7 +271,7 @@ extern BPlusTree *create_database(const char *filename, int order) {
         return NULL;
     }
 
-    // å†™å…¥B+æ ‘çš„æ ¹èŠ‚ç‚¹å’Œå…¶ä»–æ•°æ®
+    // Ğ´ÈëB+Ê÷µÄ¸ù½ÚµãºÍÆäËûÊı¾İ
     fwrite(&(tree->order), sizeof(int), 1, tree->file);
     fwrite(&(tree->root->is_leaf), sizeof(bool), 1, tree->file);
     fwrite(&(tree->root->num_keys), sizeof(int), 1, tree->file);
@@ -108,7 +279,7 @@ extern BPlusTree *create_database(const char *filename, int order) {
     fwrite(tree->root->records, sizeof(StudentRecord), MAX_ORDER - 1, tree->file);
     fwrite(tree->root->children, sizeof(void *), MAX_ORDER, tree->file);
 
-    printf("æ•°æ®åº“'%s'å·²ç»åˆ›å»º\n", filename);
+    printf("Êı¾İ¿â'%s'ÒÑ¾­´´½¨\n", filename);
     fclose(tree->file);
 
     return tree;

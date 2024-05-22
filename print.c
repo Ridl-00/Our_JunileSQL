@@ -11,40 +11,40 @@
 #include <stdio.h>
 
 
-// æ‰“å°ä¸­å…±å…šå‘˜çš„è®°å½•
+// ´òÓ¡ÖÐ¹²µ³Ô±µÄ¼ÇÂ¼
 static void print_cpc_member(const StudentRecord *record) {
-    printf("ä¸­å…±å…šå‘˜: %s, Student_ID: %d, åŠ å…¥æ—¶é—´: %d-%d-%d\n",
-           record->name, record->student_id, record->info.CCP_info.join_time.tm_year + 1900,
+    printf("ÖÐ¹²µ³Ô±: %s, Student_ID: %d, Class_Number: %s, ¼ÓÈëÊ±¼ä: %d-%d-%d\n",
+           record->name, record->student_id, record->class_number, record->info.CCP_info.join_time.tm_year + 1900,
            record->info.CCP_info.join_time.tm_mon + 1, record->info.CCP_info.join_time.tm_mday);
 }
 
-// æ‰“å°å…±é’å›¢å‘˜çš„è®°å½•
+// ´òÓ¡¹²ÇàÍÅÔ±µÄ¼ÇÂ¼
 static void print_cylc_member(const StudentRecord *record) {
-    printf("å…±é’å›¢å‘˜: %s, Student_ID: %d, å…¥å›¢æ—¶é—´: %d-%d-%d, æäº¤å…¥å…šç”³è¯·æ—¶é—´: %d-%d-%d\n",
-           record->name, record->student_id, record->info.CYLC_info.join_time.tm_year + 1900,
+    printf("¹²ÇàÍÅÔ±: %s, Student_ID: %d, Class_Number: %s, ÈëÍÅÊ±¼ä: %d-%d-%d, Ìá½»Èëµ³ÉêÇëÊ±¼ä: %d-%d-%d\n",
+           record->name, record->student_id, record->class_number, record->info.CYLC_info.join_time.tm_year + 1900,
            record->info.CYLC_info.join_time.tm_mon + 1, record->info.CYLC_info.join_time.tm_mday,
            record->info.CYLC_info.date_of_application.tm_year + 1900,
            record->info.CYLC_info.date_of_application.tm_mon + 1,
            record->info.CYLC_info.date_of_application.tm_mday);
 }
 
-// æ‰“å°é¢„å¤‡å…šå‘˜çš„è®°å½•
+// ´òÓ¡Ô¤±¸µ³Ô±µÄ¼ÇÂ¼
 static void print_p_cpc_member(const StudentRecord *record) {
-    printf("é¢„å¤‡å…šå‘˜: %s, Student_ID: %d, æ˜¯å¦å®Œæˆå®£èª“: %s, æ˜¯å¦å®Œæˆè½¬æ­£æ‰‹ç»­: %s\n",
-           record->name, record->student_id,
-           record->info.P_CPC_info.is_sworn ? "æ˜¯" : "å¦",
-           record->info.P_CPC_info.is_procedure_finished ? "æ˜¯" : "å¦");
+    printf("Ô¤±¸µ³Ô±: %s, Student_ID: %d, Class_Number: %s, ÊÇ·ñÍê³ÉÐûÊÄ: %s, ÊÇ·ñÍê³É×ªÕýÊÖÐø: %s\n",
+           record->name, record->student_id, record->class_number,
+           record->info.P_CPC_info.is_sworn ? "ÊÇ" : "·ñ",
+           record->info.P_CPC_info.is_procedure_finished ? "ÊÇ" : "·ñ");
 }
-// æ‰“å°ç¾¤ä¼—çš„è®°å½•
-static void print_mass_member(StudentRecord *record) {
-    printf("ç¾¤ä¼—: %s, Student_ID: %d\n", record->name, record->student_id);
+// ´òÓ¡ÈºÖÚµÄ¼ÇÂ¼
+static void print_mass_member(const StudentRecord *record) {
+    printf("ÈºÖÚ: %s, Student_ID: %d, Class_Number: %s\n", record->name, record->student_id, record->class_number);
 }
-// æ‰“å°å…¶ä»–æ”¿æ²»é¢è²Œçš„è®°å½•
+// ´òÓ¡ÆäËûÕþÖÎÃæÃ²µÄ¼ÇÂ¼
 static void print_others(const StudentRecord *record) {
-    printf("å…¶ä»–: %s, Student_ID: %d\n", record->name, record->student_id);
+    printf("ÆäËû: %s, Student_ID: %d, Class_Number: %s\n", record->name, record->student_id, record->class_number);
 }
 
-// æ ¹æ®æ”¿æ²»é¢è²Œé€‰æ‹©æ‰“å°å‡½æ•°
+// ¸ù¾ÝÕþÖÎÃæÃ²Ñ¡Ôñ´òÓ¡º¯Êý
 PrintFunction select_print_function(Political political) {
     switch (political) {
         case CPC_M:
@@ -62,7 +62,7 @@ PrintFunction select_print_function(Political political) {
     }
 }
 
-// éåŽ†B+æ ‘å¹¶æ‰“å°æ‰€æœ‰è®°å½•
+// ±éÀúB+Ê÷²¢´òÓ¡ËùÓÐ¼ÇÂ¼
 void print_bplus_tree(const BPlusTree *tree) {
     Node *current = tree->root;
 	if (current == NULL) {
@@ -71,15 +71,20 @@ void print_bplus_tree(const BPlusTree *tree) {
 	}
     while (current) {
         for (int i = 0; i < current->num_keys; i++) {
-            PrintFunction print_function = select_print_function(current->records[i].political);
-            print_function(&current->records[i]);
+            print_record(&current->records[i]);
         }
-        // å¦‚æžœæ˜¯å¶èŠ‚ç‚¹ï¼Œåˆ™è·³åˆ°ä¸‹ä¸€ä¸ªå¶èŠ‚ç‚¹
+        // Èç¹ûÊÇÒ¶½Úµã£¬ÔòÌøµ½ÏÂÒ»¸öÒ¶½Úµã
         if (current->is_leaf) {
             current = current->next;
         } else {
-            // å¦‚æžœæ˜¯å†…éƒ¨èŠ‚ç‚¹ï¼Œåˆ™ç»§ç»­å‘ä¸‹éåŽ†
+            // Èç¹ûÊÇÄÚ²¿½Úµã£¬Ôò¼ÌÐøÏòÏÂ±éÀú
             current = (Node *)current->children[0];
         }
     }
+}
+
+void print_record(StudentRecord *record)
+{
+    PrintFunction print_function = select_print_function(record->political);
+    print_function(record);
 }
