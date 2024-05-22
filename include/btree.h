@@ -60,7 +60,7 @@ typedef struct {
 // 班级政治面貌统计
 typedef struct {
     char class_number[10];
-    int counts[5];  /* [0 中共党员, 1 中共预备党员, 2 共青团员 , 3 群众 , 4 其他 */
+    int counts[5];  /* [0 中共党员, 1 中共预备党员, 2 共青团员 , 3 群众 , 4 其他 ]*/
 } Class_info;
 
 // 节点结构体

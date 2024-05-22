@@ -9,6 +9,8 @@
 
 #define MAX_ORDER 3
 #define ADD_FILENAME_LENGTH 6
+#define POLITICAL_NUM 5
+#define MAX_CLASS_NUMBER 50
 
 static char format_filename[MAX_FILENAME_LENGTH] = "";//用于统一文件路径便于管理文件
 
@@ -89,6 +91,80 @@ void delete_student_record(BPlusTree *tree, int key) {
     delete_(tree, key);
 }
 
+void analyze_grade(BPlusTree *tree, char *grade)
+{
+    char class_list[MAX_CLASS_NUMBER][10];
+    int grade_info[MAX_CLASS_NUMBER][5]={{0}};
+    Node *root = tree->root;
+
+    count_political_by_grade(root, grade, grade_info, class_list);
+    print_political_count_by_grade(grade, grade_info, class_list);
+}
+// 统计年级中每个班级成员政治面貌信息
+void count_political_by_grade(Node * const root, const char *grade, int grade_info[][POLITICAL_NUM], char (*class_list)[10])
+{
+	if (root == NULL) {
+		printf("Empty tree.\n");
+		return;
+	}
+
+    // 初始化class_info
+    for(int i=0;i<MAX_CLASS_NUMBER;i++){
+        strcpy(class_list[i], "empty");
+    }
+
+	int i, j;
+    char record_grade[4];
+	Node * c = root;
+	while (!c->is_leaf)
+		c = c->children[0];
+	while (true) {
+		for (i = 0; i < c->num_keys; i++) {
+            sscanf(c->records[i].class_number, "%*4s%2s", record_grade);
+            int find_flag=0, j=0;
+            if (strcmp(grade, record_grade)==0){
+                while (j<MAX_CLASS_NUMBER && strcmp(class_list[j], "empty")!=0){
+                    if (strcmp(class_list[j], c->records[i].class_number)==0){
+                        grade_info[j][c->records[i].political] += 1;
+                        find_flag=1;
+                        break;
+                    }
+                    j++;
+                }
+                if(j<MAX_CLASS_NUMBER && (!find_flag)){
+                    strcpy(class_list[j], c->records[i].class_number);
+                    grade_info[j][c->records[i].political] += 1;
+                }
+            }
+		}
+        if (c->next!=NULL){
+            c=c->next;
+        }
+		else
+			break;
+	}
+
+
+}
+
+void print_political_count_by_grade(const char *grade, int grade_info[][POLITICAL_NUM], char (*class_list)[10])
+{
+    printf("年级：%s\n", grade);
+    int i=0;
+    while(i<MAX_CLASS_NUMBER && strcmp(class_list[i], "empty")!=0){
+        printf("班级：%s    ", class_list[i]);
+        printf("中共党员：%d人 中共预备党员：%d人 共青团员：%d人 群众：%d人 其他：%d人\n", grade_info[i][0], grade_info[i][1], grade_info[i][2], grade_info[i][3], grade_info[i][4]);
+        i++;
+    }
+    if(i==0){
+        puts("此年级没有班级信息");
+    }
+    return;
+
+}
+
+
+
 // 统计班级信息
 void analyze_class(BPlusTree *tree, char *class_number)
 {
@@ -98,7 +174,7 @@ void analyze_class(BPlusTree *tree, char *class_number)
     count_political_by_class(root, class_number, count);
     print_political_count_by_class(count);
 }
-// 统计各个政治面貌成员个数
+// 统计班级各个政治面貌成员个数
 void count_political_by_class(Node * const root, const char *class_number, Class_info *count)
 {
 	if (root == NULL) {
@@ -121,19 +197,26 @@ void count_political_by_class(Node * const root, const char *class_number, Class
                 count->counts[c->records[i].political]++;
             }
 		}
-		if (c->children[MAX_ORDER - 1] != NULL) {
-			c = c->children[MAX_ORDER - 1];
-		}
+		// if (c->children[MAX_ORDER - 1] != NULL) {
+		// 	c = c->children[MAX_ORDER - 1];
+		// }
+        if (c->next!=NULL){
+            c=c->next;
+        }
 		else
 			break;
 	}
-	printf("\n");
 }
 // 打印统计结果
 void print_political_count_by_class(Class_info *count)
 {
-    printf("班级：%s\n", count->class_number);
+    if(count->counts[0]==0 && count->counts[1]==0 && count->counts[2]==0 && count->counts[3]==0 && count->counts[4]==0){
+        puts("此班级无成员信息");
+        return;
+    }
+    printf("班级：%s    ", count->class_number);
     printf("中共党员：%d人 中共预备党员：%d人 共青团员：%d人 群众：%d人 其他：%d人\n", count->counts[0], count->counts[1], count->counts[2], count->counts[3], count->counts[4]);
+    return;
 }
 // 修改记录基本信息
 void change_record_info(StudentRecord *record, int order)
@@ -148,7 +231,7 @@ void change_record_info(StudentRecord *record, int order)
         puts("请输入新的班级");
         char newclass[10];
         scanf("%s", newclass);
-        strcpy(record->name, newclass);
+        strcpy(record->class_number, newclass);
     }
     else if(order==3){
         puts("请输入新的年龄");

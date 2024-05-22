@@ -21,10 +21,11 @@ typedef enum{
     INSERT,
     DELETE,
     OPEN,
-    SHOW,// 展示完整数据库，按班级统计学生政治面貌信息
+    SHOW,// 展示完整数据库
     WRITE,
     SEARCH,// 按学号查询学生信息，同时输出是否有推优资格（团员）/转正资格（预备党员）
     CHANGE,// 改变某一学生信息
+    ANALYZE,// 按班级或年级统计学生政治面貌信息
     COM_NUM,
     INVALID_INPUT
 
@@ -35,7 +36,7 @@ typedef enum {
     META_COMMAND_UNRECOGNIZED_COMMAND
 } MetaCommandResult;
 
-const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show", ".write", ".search", ".change"};
+const char *Commands[COM_NUM] = {".exit", ".create", ".insert", ".delete", ".open", ".show", ".write", ".search", ".change", ".analyze"};
 
 static void eat_line(void){
     while(getchar() != '\n')
@@ -164,10 +165,6 @@ int main(int argc, char* argv[]) {
             {
                 if(current_tree != NULL){
                     print_bplus_tree(current_tree);
-                    puts("请输入要查询的班级号");
-                    char class_number[10];
-                    fgets(class_number, sizeof(class_number), stdin);
-                    analyze_class(current_tree, class_number);
                 }
                 continue;
             }
@@ -185,8 +182,10 @@ int main(int argc, char* argv[]) {
                     continue;
                 }
                 continue;
+            }
             case (SEARCH):
-                puts("璇疯緭鍏ヨ鏌ヨ鐨勫鐢熷鍙?");
+            {
+                puts("请输入要查询的学生学号");
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
                     puts("当前查询的学生信息为");
@@ -198,45 +197,80 @@ int main(int argc, char* argv[]) {
                 puts("当前查询的学生信息为");
                 print_record(&cur->records[index]);
                 break;
+            }
             case (CHANGE):
+            {
+                save_flag=false;
                 puts("请输入要修改的学生的学号");
-                key = -1; 
+                int key = -1; 
                 while(scanf("%d", &key) != 1){
-                    puts("错误的输入格式");
+                    wrong_format_prompt();
                     eat_line();
                 }
                 eat_line();
 
-                Node *cur2=search(current_tree, key);
-                int index2=search_in_node(cur2, key);
+                Node *cur=search(current_tree, key);
+                int index=search_in_node(cur, key);
                 puts("当前要修改的学生信息为");
-                print_record(&cur2->records[index2]);
+                print_record(&cur->records[index]);
 
-                puts("请输入修改类型编号");
-                printf("<姓名>:1, <班级>:2, <年龄>:3, <政治面貌>:4, <政治信息>:5 (学号不可修改)");
+                printf("<1: 姓名> <2: 班级> <3: 年龄> <4: 政治面貌> <5: 政治信息> (学号不可修改)\n");
+                puts("请输入修改类型编号:");
                 int order;
                 while(scanf("%d", &order) != 1){
-                    puts("错误的输入格式");
+                    wrong_format_prompt();
                     eat_line();
                 }
                 switch (order){
                     case 1:
                     case 2:
                     case 3:
-                        change_record_info(&cur->records[index2], order);
+                        change_record_info(&cur->records[index], order);
                         break;
                     case 4:
-                        change_record_politaical(&cur->records[index2]);
+                        change_record_politaical(&cur->records[index]);
                         break;
                     case 5:
-                        change_record_poli_info(&cur->records[index2]);
+                        change_record_poli_info(&cur->records[index]);
                     default:
-                        puts("无法识别的编号");
+                        wrong_format_prompt();
                         break;
                 }
                 puts("修改后的学生信息为");
-                print_record(&cur->records[index2]);
+                print_record(&cur->records[index]);
                 continue;
+            }
+            case (ANALYZE):
+            {
+                int op;
+                
+                if(current_tree != NULL){
+                    puts("请输入查询信息");
+                    puts("<grade> <class> 示例:2023 04932301; 23 all(查询整个年级)");
+                    fgets(input_buffer->buffer, input_buffer->size, stdin);
+
+                    char grade[10];
+                    char class_number[10];
+                    char all_sign[10];
+                    sscanf("all", "%s", all_sign);
+                    int ret=sscanf(input_buffer->buffer, "%s %s", grade, class_number);
+                    if(ret!=2){
+                        wrong_format_prompt();
+                        continue;
+                    }
+                    if(strlen(grade)==4){
+                        sscanf(grade, "%*2s%2s", grade);
+                        // printf("年级：%s", grade);
+                    }
+                    if(strcmp(class_number, all_sign)==0){
+                        analyze_grade(current_tree, grade);
+                    }
+                    else{
+                        analyze_class(current_tree, class_number);
+                    }
+                }
+                continue;
+                
             }
             case (INVALID_INPUT):
                 printf("Unrecognized command '%s'\n", input_buffer->buffer);
