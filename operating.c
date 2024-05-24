@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_ORDER 3
 #define ADD_FILENAME_LENGTH 6
 
 static char format_filename[MAX_FILENAME_LENGTH] = "";//用于统一文件路径便于管理文件
