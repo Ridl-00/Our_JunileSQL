@@ -1,4 +1,4 @@
-obj = clever.o print.o operating.o info_read.o btree.o buffer.o mystrptime.o
+obj = clever.o print.o operating.o info_read.o btree.o buffer.o
 
 vpath %.h ./include/
 
@@ -15,7 +15,7 @@ print.o : print.h btree.h btree.o
 operating.o : operating.h btree.h info_read.h btree.o
 	gcc -I./include -c operating.c -o operating.o
 
-info_read.o : info_read.h btree.h mystrptime.h btree.o
+info_read.o : info_read.h btree.h btree.o
 	gcc -I./include -c info_read.c -o info_read.o
 
 btree.o : btree.h
@@ -24,8 +24,7 @@ btree.o : btree.h
 buffer.o : buffer.h
 	gcc -I./include -c buffer.c -o buffer.o
 
-mystrptime.o : mystrptime.h
-	gcc -I./include -c mystrptime.c -o mystrptime.o
+
 
 .PHONY : clean repo_dir run
 clean :

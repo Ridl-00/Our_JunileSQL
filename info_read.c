@@ -5,7 +5,6 @@
 #include <time.h>
 #include <string.h>
 #include <strings.h>
-#include <mystrptime.h>
 
 #define TIME_BUFFER_SIZE 11
 #define BOOL_BUFFER_SIZE 10
@@ -22,9 +21,9 @@ static char time_buffer[TIME_BUFFER_SIZE];
 static char bool_buffer[BOOL_BUFFER_SIZE];
 
 static void read_time(struct tm *time_info) {
-    printf("ÇëÊäÈëÊ±¼ä (¸ñÊ½: YYYY-MM-DD): ");
+    printf("è¯·è¾“å…¥æ—¶é—´ (æ ¼å¼: YYYY-MM-DD): ");
     fgets(time_buffer, TIME_BUFFER_SIZE, stdin);
-    mystrptime(time_buffer, "%Y-%m-%d", time_info);
+    strptime(time_buffer, "%Y-%m-%d", time_info);
     eat_line();
 }
 
@@ -46,25 +45,25 @@ static bool read_bool(const char *prompt) {
 
 static void read_cpc_info(Feature_info *info) {
     
-    printf("ÊäÈëÑ§ÉúÈëµ³Ê±¼ä£º\n");
+    printf("è¾“å…¥å­¦ç”Ÿå…¥å…šæ—¶é—´ï¼š\n");
     read_time(&info->CCP_info.join_time);
 }
 
 static void read_cylc_info(Feature_info *info) {
-    printf("ÊäÈëÑ§ÉúÏà¹ØĞÅÏ¢\n");
-    puts("ÇëÊäÈëÑ§ÉúµÄÈëÍÅÊ±¼ä");
+    printf("è¾“å…¥å­¦ç”Ÿç›¸å…³ä¿¡æ¯\n");
+    puts("è¯·è¾“å…¥å­¦ç”Ÿçš„å…¥å›¢æ—¶é—´");
     read_time(&info->CYLC_info.join_time);
-    printf("ÇëÊäÈëÌá½»Èëµ³ÉêÇëµÄÉêÇëÈÕÆÚ£º\n");
+    printf("è¯·è¾“å…¥æäº¤å…¥å…šç”³è¯·çš„ç”³è¯·æ—¥æœŸï¼š\n");
     read_time(&info->CYLC_info.date_of_application);
-    info->CYLC_info.is_recommended = read_bool("ÊÇ·ñ±»ÍÆ¼ö");
-    info->CYLC_info.is_training_finished = read_bool("ÅàÑµÊÇ·ñÍê³É");
+    info->CYLC_info.is_recommended = read_bool("æ˜¯å¦è¢«æ¨è");
+    info->CYLC_info.is_training_finished = read_bool("è®­ç»ƒæ˜¯å¦å®Œæˆ");
 }
 
 static void read_p_cpc_info(Feature_info *info) {
-    printf("ÊäÈëÑ§ÉúÏà¹ØĞÅÏ¢£º\n");
-    info->P_CPC_info.is_sworn = read_bool("ÊÇ·ñÍê³ÉĞûÊÄ");
-    info->P_CPC_info.is_date_over = read_bool("Ô¤±¸ÆÚÊÇ·ñÒÑÂú");
-    info->P_CPC_info.is_procedure_finished = read_bool("×ªÕıÊÖĞøÊÇ·ñÍê³É");
+    printf("è¾“å…¥å­¦ç”Ÿç›¸å…³ä¿¡æ¯ï¼š\n");
+    info->P_CPC_info.is_sworn = read_bool("æ˜¯å¦å®Œæˆå®£èª“");
+    info->P_CPC_info.is_date_over = read_bool("é¢„å¤‡æœŸæ˜¯å¦å·²æ»¡");
+    info->P_CPC_info.is_procedure_finished = read_bool("è½¬æ­£æ‰‹ç»­æ˜¯å¦å®Œæˆ");
 }
 
 void read_feature_info(StudentRecord *record) {

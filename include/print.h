@@ -11,8 +11,6 @@
 #include <btree.h>
 typedef void (*PrintFunction)(const StudentRecord *record);
 
-void print_record(StudentRecord *record);
-
 static void print_cylc_member(const StudentRecord *record);
 
 static void print_cpc_member(const StudentRecord *record);
