@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
                     wrong_format_prompt();
-                    eat_line; 
+                    eat_line(); 
                 }
                 delete_student_record(current_tree, key);
                 continue;
