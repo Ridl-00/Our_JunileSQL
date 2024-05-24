@@ -96,48 +96,44 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
     }
 }
 
-
 void split_child(Node *parent, int index, Node *child, BPlusTree *tree) {
-    // 创建一个新节点用于分裂
-    Node *new_child_node = new_node(child->is_leaf);
-    new_child_node->num_keys = tree->order / 2;
 
-    // 复制子节点的后半部分到新节点
+    Node *new_child_node = new_node(child->is_leaf);
+    int mid = tree->order / 2;
+
+    //复制
+    new_child_node->num_keys = child->num_keys - mid;
     for (int i = 0; i < new_child_node->num_keys; i++) {
-        new_child_node->keys[i] = child->keys[i + tree->order / 2];
+        new_child_node->keys[i] = child->keys[mid + i];
         if (child->is_leaf) {
-            // 复制记录
-            new_child_node->records[i] = child->records[i + tree->order / 2];
+            new_child_node->records[i] = child->records[mid + i];
         } else {
-            // 复制子节点
-            new_child_node->children[i] = child->children[i + tree->order / 2];
+            new_child_node->children[i] = child->children[mid + i];
         }
     }
     if (!child->is_leaf) {
         new_child_node->children[new_child_node->num_keys] = child->children[child->num_keys];
     }
+    
+    child->num_keys = mid;
 
-    // 更新子节点的关键字数量
-    child->num_keys = tree->order / 2;
-
-    // 将新节点插入父节点
+    //插入
     for (int i = parent->num_keys; i > index; i--) {
         parent->children[i + 1] = parent->children[i];
     }
     parent->children[index + 1] = new_child_node;
+
     for (int i = parent->num_keys; i > index; i--) {
         parent->keys[i] = parent->keys[i - 1];
     }
-    parent->keys[index] = child->keys[tree->order / 2];
+    parent->keys[index] = child->keys[mid];
     parent->num_keys++;
 
-    // 如果子节点是叶节点，更新叶节点的链表
     if (child->is_leaf) {
         new_child_node->next = child->next;
         child->next = new_child_node;
-    }
+    }//更新叶节点链表
 }
-
 
 // 删除操作：从叶节点中删除关键字
 void delete_from_leaf(Node *leaf, int key) {
