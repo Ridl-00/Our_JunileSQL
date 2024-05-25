@@ -90,7 +90,6 @@ int main(int argc, char* argv[]) {
         switch (temp){
             case (CREATE):
             {
-                save_flag = false;
                 puts("输入数据库名称:");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
                 BPlusTree *temp = create_database(input_buffer->buffer, MAX_ORDER);
@@ -162,7 +161,6 @@ int main(int argc, char* argv[]) {
             }
             case (WRITE):
             {
-                save_flag = false;
                 if(current_tree == NULL){
                     puts("写入失败");
                     puts("当前未打开任意数据库。请先使用.open打开一个数据库");
