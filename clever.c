@@ -113,20 +113,17 @@ int main(int argc, char* argv[]) {
                 int temp_info = -1;
                 fgets(input_buffer->buffer, input_buffer->size, stdin);
 
-                StudentRecord record = {
-                    .student_id = -1,
-                    .class_number = "unknown",
-                    .name = "unknown",
-                    .age = -1
-                };
+                StudentRecord record;
 
                 sscanf(input_buffer->buffer, "%d %d %s %s %d",&record.student_id, &record.age,
                                                             record.name, record.class_number, 
                                                             &temp_info);
+
                 if(record.student_id < 0 || record.age < 0|| temp_info < 0){
                     wrong_format_prompt();
                     continue;
                 }
+
                 record.political = temp_info;
                 read_feature_info(&record);
                 insert_student_record(current_tree, record.student_id, record);
@@ -141,6 +138,7 @@ int main(int argc, char* argv[]) {
                     wrong_format_prompt();
                     eat_line(); 
                 }
+                eat_line();
                 delete_student_record(current_tree, key);
                 continue;
             }
@@ -175,6 +173,7 @@ int main(int argc, char* argv[]) {
                     save_prompt(current_filename);
                     continue;
                 }
+                save_flag = true;
                 continue;
             }
             case (INVALID_INPUT):
