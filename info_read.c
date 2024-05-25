@@ -54,8 +54,11 @@ static void read_cylc_info(Feature_info *info) {
     printf("输入学生相关信息\n");
     puts("请输入学生的入团时间");
     read_time(&info->CYLC_info.join_time);
-    printf("请输入提交入党申请的申请日期：\n");
-    read_time(&info->CYLC_info.date_of_application);
+    info->CYLC_info.is_application_submitted = read_bool("是否提交入党申请书");
+    if(info->CYLC_info.is_application_submitted){
+        printf("请输入提交入党申请的申请日期：\n");
+        read_time(&info->CYLC_info.date_of_application);
+    }
     info->CYLC_info.is_recommended = read_bool("是否被推荐");
     info->CYLC_info.is_training_finished = read_bool("培训是否完成");
 }

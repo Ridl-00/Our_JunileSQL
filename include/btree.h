@@ -30,6 +30,7 @@ typedef struct {
 
 typedef struct {
     tm join_time;//加入共青团时间
+    bool is_application_submitted;//是否提交入党申请书
     tm date_of_application;//申请日期
     bool is_recommended;//是否被推荐
     //有一个age数据记录年龄，无需判断是否成年

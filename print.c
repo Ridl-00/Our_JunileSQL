@@ -20,12 +20,16 @@ static void print_cpc_member(const StudentRecord *record) {
 
 // 打印共青团员的记录
 static void print_cylc_member(const StudentRecord *record) {
-    printf("共青团员: %s, Student_ID: %d, Class_Number: %s, 入团时间: %d-%d-%d, 提交入党申请时间: %d-%d-%d\n",
+    printf("共青团员: %s, Student_ID: %d, Class_Number: %s, 入团时间: %d-%d-%d, ",
            record->name, record->student_id, record->class_number, record->info.CYLC_info.join_time.tm_year + 1900,
            record->info.CYLC_info.join_time.tm_mon + 1, record->info.CYLC_info.join_time.tm_mday,
            record->info.CYLC_info.date_of_application.tm_year + 1900,
            record->info.CYLC_info.date_of_application.tm_mon + 1,
-           record->info.CYLC_info.date_of_application.tm_mday);
+           record->info.CYLC_info.is_application_submitted ? "是" : "否"
+           );
+    if(record->info.CYLC_info.is_application_submitted){
+        printf("提交入党申请时间: %d-%d-%d\n", record->info.CYLC_info.date_of_application.tm_mday);
+    }
 }
 
 // 打印预备党员的记录
