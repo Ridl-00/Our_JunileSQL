@@ -1,3 +1,5 @@
+❗最终版本目前在analyze分支
+
 # Our_JunileSQL | 计算机设计大赛
 bash shell
 在程序主目录中使用make命令, 即可生成对应的二进制文件
