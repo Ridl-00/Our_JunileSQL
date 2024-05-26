@@ -1,10 +1,3 @@
-/*************************************************************************
-*	> File Name: include/print.h
-*	> Author: 
-*	> Mail: 
-*	> Created Time: Fri Apr 26 17:15:23 2024
-* ************************************************************************/
-
 #ifndef PRINT_H
 #define PRINT_H
 
@@ -26,5 +19,7 @@ static void print_others(const StudentRecord *record);
 PrintFunction select_print_function(const Political political);
 
 void print_bplus_tree(const BPlusTree *tree);
+
+void print_node(const Node *node);
 
 #endif

@@ -8,9 +8,9 @@
 #define POLITICAL_NUM 5
 #define MAX_CLASS_NUMBER 50
 
-static void save_node(FILE *file, Node *node);
+static void save_node(const Node *node, FILE *file);
 
-void save_bplus_tree(BPlusTree *tree, const char *filename);
+void save_bplus_tree(const BPlusTree *tree, const char *filename);
 
 BPlusTree *load_bplus_tree(const char *filename);
 

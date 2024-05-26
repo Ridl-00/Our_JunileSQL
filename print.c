@@ -1,14 +1,11 @@
-/*************************************************************************
-*	> File Name: print.c
-*	> Author: 
-*	> Mail: 
-*	> Created Time: Fri Apr 26 17:08:49 2024
-* ************************************************************************/
-
 #include <btree.h>
 #include <print.h>
 #include <time.h>
 #include <stdio.h>
+
+//#define NDEBUG
+#include <assert.h>
+
 
 
 // 打印中共党员的记录
@@ -20,15 +17,18 @@ static void print_cpc_member(const StudentRecord *record) {
 
 // 打印共青团员的记录
 static void print_cylc_member(const StudentRecord *record) {
-    printf("共青团员: %s, Student_ID: %d, Class_Number: %s, 入团时间: %d-%d-%d, ",
-           record->name, record->student_id, record->class_number, record->info.CYLC_info.join_time.tm_year + 1900,
-           record->info.CYLC_info.join_time.tm_mon + 1, record->info.CYLC_info.join_time.tm_mday,
-           record->info.CYLC_info.date_of_application.tm_year + 1900,
-           record->info.CYLC_info.date_of_application.tm_mon + 1,
+    printf("共青团员: %s, Student_ID: %d, Class_Number: %s, 入团时间: %d-%d-%d, 是否提交入党申请书: %s",
+           record->name, record->student_id, record->class_number,
+           record->info.CYLC_info.join_time.tm_year + 1900,
+           record->info.CYLC_info.join_time.tm_mon + 1,
+           record->info.CYLC_info.join_time.tm_mday,
            record->info.CYLC_info.is_application_submitted ? "是" : "否"
            );
     if(record->info.CYLC_info.is_application_submitted){
-        printf("提交入党申请时间: %d-%d-%d\n", record->info.CYLC_info.date_of_application.tm_mday);
+        printf(", 提交入党申请时间: %d-%d-%d\n", 
+            record->info.CYLC_info.date_of_application.tm_year + 1900,
+            record->info.CYLC_info.date_of_application.tm_mon + 1,
+            record->info.CYLC_info.date_of_application.tm_mday);
     }
 }
 
@@ -69,26 +69,26 @@ PrintFunction select_print_function(Political political) {
 // 遍历B+树并打印所有记录
 void print_bplus_tree(const BPlusTree *tree) {
     Node *current = tree->root;
-	if (current == NULL) {
-		printf("Empty tree.\n");
-		return;
-	}
+    while (!current->is_leaf) {
+        current = (Node *)current->children[0];
+    }
     while (current) {
-        for (int i = 0; i < current->num_keys; i++) {
-            print_record(&current->records[i]);
-        }
-        // 如果是叶节点，则跳到下一个叶节点
-        if (current->is_leaf) {
-            current = current->next;
-        } else {
-            // 如果是内部节点，则继续向下遍历
-            current = (Node *)current->children[0];
-        }
+        print_node(current);
+        current = current->next;
     }
 }
 
+// 打印记录
 void print_record(StudentRecord *record)
 {
     PrintFunction print_function = select_print_function(record->political);
     print_function(record);
+}
+
+//打印节点
+void print_node(const Node *node) {
+    for (int i = 0; i < node->num_keys; i++) {
+        PrintFunction print_function = select_print_function(node->records[i].political);
+        print_function(&node->records[i]);
+    }
 }

@@ -12,7 +12,7 @@
  * 宏MAX_ORDER定义为B+树的阶数
  */
 
-#define MAX_ORDER 3 
+#define MAX_ORDER 10000 
 typedef struct tm tm;
 
 typedef enum {
@@ -69,10 +69,10 @@ typedef struct Node {
     bool is_leaf; // 是否是叶节点
     int num_keys; // 当前键的数量
     int keys[MAX_ORDER - 1]; // 存储键的数组（学号）
-    void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
-    // void ** pointers;
-    // 如果是非叶节点为NULL
-    StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
+    union{
+        void *children[MAX_ORDER]; // 指向子节点或叶节点的指针
+        StudentRecord records[MAX_ORDER - 1]; // 学生记录数组
+    };
     struct Node *next; // 指向下一个叶节点的指针
 } Node;
 
@@ -145,5 +145,8 @@ void borrow_from_right(Node *parent, int index);
 
 void merge_children(Node *parent, int index);
 
+void free_node(Node *node);
+
+void free_bplus_tree(BPlusTree *tree);
 
 #endif

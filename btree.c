@@ -4,17 +4,24 @@
 #include <string.h>
 #include <stdbool.h>
 
+//#define NDEBUG
+#include <assert.h>
+
+
+//create a new node
 Node *new_node(bool is_leaf) {
     Node *node = (Node *)malloc(sizeof(Node));
     node->is_leaf = is_leaf;
     node->num_keys = 0;
     node->next = NULL;
     memset(node->keys, 0, sizeof(node->keys));
-    memset(node->records, 0, sizeof(node->records));
-    memset(node->children, 0, sizeof(node->children));
+    if (is_leaf) {
+        memset(node->records, 0, sizeof(node->records));
+    } else {
+        memset(node->children, 0, sizeof(node->children));
+    }
     return node;
 }
-
 // 创建一个新的B+树
 BPlusTree *new_bplus_tree(const char *filename, int order) {
     BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
@@ -75,18 +82,17 @@ void insert(BPlusTree *tree, int key, StudentRecord record) {
 // 将关键字插入非满节点
 void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree) {
     if (node->is_leaf) {
-        // 如果是叶节点，直接插入关键字
         insert_into_leaf(node, key, record);
     } else {
-        // 如果是内部节点，递归找到叶节点进行插入
         int index = search_in_node(node, key);
         Node *child = (Node *)node->children[index];
+        
         if (child->num_keys == tree->order - 1) {
-            // 子节点满时需要分裂
             split_child(node, index, child, tree);
-            // 确定插入的子节点
-            if (key > node->keys[index]) {
-                child = (Node *)node->children[index + 1];
+
+            if (key >= node->keys[index]) { // 处理key等于node->keys[index]的情况
+                index++;
+                child = (Node *)node->children[index];
             }
         }
         insert_non_full(child, key, record, tree);
@@ -95,46 +101,43 @@ void insert_non_full(Node *node, int key, StudentRecord record, BPlusTree *tree)
 
 
 void split_child(Node *parent, int index, Node *child, BPlusTree *tree) {
-    // 创建一个新节点用于分裂
-    Node *new_child_node = new_node(child->is_leaf);
-    new_child_node->num_keys = tree->order / 2;
 
-    // 复制子节点的后半部分到新节点
+    Node *new_child_node = new_node(child->is_leaf);
+    int mid = tree->order / 2;
+
+    //复制
+    new_child_node->num_keys = child->num_keys - mid;
     for (int i = 0; i < new_child_node->num_keys; i++) {
-        new_child_node->keys[i] = child->keys[i + tree->order / 2];
+        new_child_node->keys[i] = child->keys[mid + i];
         if (child->is_leaf) {
-            // 复制记录
-            new_child_node->records[i] = child->records[i + tree->order / 2];
+            new_child_node->records[i] = child->records[mid + i];
         } else {
-            // 复制子节点
-            new_child_node->children[i] = child->children[i + tree->order / 2];
+            new_child_node->children[i] = child->children[mid + i];
         }
     }
     if (!child->is_leaf) {
         new_child_node->children[new_child_node->num_keys] = child->children[child->num_keys];
     }
+    
+    child->num_keys = mid;
 
-    // 更新子节点的关键字数量
-    child->num_keys = tree->order / 2;
-
-    // 将新节点插入父节点
+    //插入
     for (int i = parent->num_keys; i > index; i--) {
         parent->children[i + 1] = parent->children[i];
     }
     parent->children[index + 1] = new_child_node;
+
     for (int i = parent->num_keys; i > index; i--) {
         parent->keys[i] = parent->keys[i - 1];
     }
-    parent->keys[index] = child->keys[tree->order / 2];
+    parent->keys[index] = child->keys[mid];
     parent->num_keys++;
 
-    // 如果子节点是叶节点，更新叶节点的链表
     if (child->is_leaf) {
         new_child_node->next = child->next;
         child->next = new_child_node;
-    }
+    }//更新叶节点链表
 }
-
 
 // 删除操作：从叶节点中删除关键字
 void delete_from_leaf(Node *leaf, int key) {
@@ -171,32 +174,54 @@ void delete_(BPlusTree *tree, int key) {
 // 从节点中删除关键字
 void delete_from_node(Node *node, int key, BPlusTree *tree) {
     int index = search_in_node(node, key);
-    if (node->is_leaf) {
-        delete_from_leaf(node, key);
+    if (index < node->num_keys && node->keys[index] == key) {
+        if (node->is_leaf) {
+            delete_from_leaf(node, key);
+        } else {
+            Node *left_child = (Node *)node->children[index];
+            Node *right_child = (Node *)node->children[index + 1];
+            if (left_child->num_keys > tree->order / 2) {
+                Node *predecessor = left_child;
+                while (!predecessor->is_leaf) {
+                    predecessor = (Node *)predecessor->children[predecessor->num_keys];
+                }
+                int pred_key = predecessor->keys[predecessor->num_keys - 1];
+                StudentRecord pred_record = predecessor->records[predecessor->num_keys - 1];
+                node->keys[index] = pred_key;
+                delete_from_node(left_child, pred_key, tree);
+            } else if (right_child->num_keys > tree->order / 2) {
+                Node *successor = right_child;
+                while (!successor->is_leaf) {
+                    successor = (Node *)successor->children[0];
+                }
+                int succ_key = successor->keys[0];
+                StudentRecord succ_record = successor->records[0];
+                node->keys[index] = succ_key;
+                delete_from_node(right_child, succ_key, tree);
+            } else {
+                merge_children(node, index);
+                delete_from_node(left_child, key, tree);
+            }
+        }
     } else {
         Node *child = (Node *)node->children[index];
-        if (child->num_keys < (tree->order - 1) / 2) {
-            // 子节点的关键字数量不足，需要借用或合并
-            if (index > 0 && ((Node *)node->children[index - 1])->num_keys > (tree->order - 1) / 2) {
-                // 向左兄弟借用
+        if (child->num_keys == tree->order / 2) {
+            Node *left_sibling = index > 0 ? (Node *)node->children[index - 1] : NULL;
+            Node *right_sibling = index < node->num_keys ? (Node *)node->children[index + 1] : NULL;
+            if (left_sibling && left_sibling->num_keys > tree->order / 2) {
                 borrow_from_left(node, index);
-            } else if (index < node->num_keys && ((Node *)node->children[index + 1])->num_keys > (tree->order - 1) / 2) {
-                // 向右兄弟借用
+            } else if (right_sibling && right_sibling->num_keys > tree->order / 2) {
                 borrow_from_right(node, index);
-            } else {
-                // 合并子节点
-                if (index > 0) {
-                    merge_children(node, index - 1);
-                    index--;
-                } else {
-                    merge_children(node, index);
-                }
+            } else if (left_sibling) {
+                merge_children(node, index - 1);
+                child = left_sibling;
+            } else if (right_sibling) {
+                merge_children(node, index);
             }
         }
         delete_from_node(child, key, tree);
     }
 }
-
 // 从左兄弟借用
 void borrow_from_left(Node *parent, int index) {
     Node *child = (Node *)parent->children[index];
@@ -268,3 +293,20 @@ void merge_children(Node *parent, int index) {
     free(right_child);
 }
 
+void free_node(Node *node) {
+    if (node == NULL) return;
+    if (!node->is_leaf) {
+        for (int i = 0; i <= node->num_keys; i++) {
+            free_node((Node *)node->children[i]);
+        }
+    }
+    free(node);
+}
+
+void free_bplus_tree(BPlusTree *tree) {
+    if (tree == NULL) return;
+
+    free_node(tree->root);
+
+    free(tree);
+}

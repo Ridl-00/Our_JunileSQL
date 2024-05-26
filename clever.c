@@ -9,6 +9,9 @@
 #include <string.h>
 #include <mystrptime.h>
 
+//#define NDEBUG
+#include <assert.h>
+
 
 bool save_flag = true;//记录数据改变是否被保存
 BPlusTree *current_tree = NULL;//记录当前被载入内存中的B+树root地址
@@ -23,14 +26,13 @@ typedef enum{
     OPEN,
     SHOW,// 展示完整数据库
     WRITE,
-    SEARCH,// 按学号查询学生信息，同时输出是否有推优资格（团员）/转正资格（预备党员）
+    SEARCH,// 按学号查询学生信息
     CHANGE,// 改变某一学生信息
     ANALYZE,// 按班级或年级统计学生政治面貌信息
     COM_NUM,
     INVALID_INPUT
 
 } COMMANDS;
-
 typedef enum {
     META_COMMAND_SUCCESS,
     META_COMMAND_UNRECOGNIZED_COMMAND
@@ -52,12 +54,10 @@ static char *f_fgets(char *buffer, int n, FILE *stream){
     return ptr;
 }
 
-
 static void help_prompt(void) { puts("使用'.exit'命令可退出程序"); };
 static void print_prompt(void) { printf("db/%s:> ", current_filename); }
 static void save_prompt(const char *filename) { printf("数据已被保存至 %s文件\n", filename); }
 static void wrong_format_prompt(void) { puts("错误的输入格式!"); };
-
 
 COMMANDS do_meta_command(char Buffer[]) {
 
@@ -97,7 +97,6 @@ int main(int argc, char* argv[]) {
         switch (temp){
             case (CREATE):
             {
-                save_flag = false;
                 puts("输入数据库名称:");
                 f_fgets(input_buffer->buffer, MAX_FILENAME_LENGTH, stdin);
                 BPlusTree *temp = create_database(input_buffer->buffer, MAX_ORDER);
@@ -115,24 +114,22 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 printf("请以 <Student_ID> <Age> <Name> <Class Number> <Political> 格式输入学生信息\n");
-                printf("( <Political>参数可选： <党员>、<预备党员>、<团员>、<群众> 和 <其他> 分别用: 0 , 1, 2, 3, 4 5 替代) \n");                print_prompt();
+                printf("( <Political>参数可选： <党员>、<预备党员>、<团员>、<群众> 和 <其他> 分别用: 0 , 1, 2, 3, 4 5 替代) \n");
+                print_prompt();
                 int temp_info = -1;
                 fgets(input_buffer->buffer, input_buffer->size, stdin);
 
-                StudentRecord record = {
-                    .student_id = -1,
-                    .class_number = "unknown",
-                    .name = "unknown",
-                    .age = -1
-                };
+                StudentRecord record;
 
                 sscanf(input_buffer->buffer, "%d %d %s %s %d",&record.student_id, &record.age,
                                                             record.name, record.class_number, 
                                                             &temp_info);
+
                 if(record.student_id < 0 || record.age < 0|| temp_info < 0){
                     wrong_format_prompt();
                     continue;
                 }
+
                 record.political = temp_info;
                 read_feature_info(&record);
                 insert_student_record(current_tree, record.student_id, record);
@@ -145,8 +142,9 @@ int main(int argc, char* argv[]) {
                 int key = -1; 
                 while(scanf("%d", &key) != 1){
                     wrong_format_prompt();
-                    eat_line; 
+                    eat_line(); 
                 }
+                eat_line();
                 delete_student_record(current_tree, key);
                 continue;
             }
@@ -170,7 +168,6 @@ int main(int argc, char* argv[]) {
             }
             case (WRITE):
             {
-                save_flag = false;
                 if(current_tree == NULL){
                     puts("写入失败");
                     puts("当前未打开任意数据库。请先使用.open打开一个数据库");
@@ -179,8 +176,9 @@ int main(int argc, char* argv[]) {
                 else{
                     save_bplus_tree(current_tree, current_filename); 
                     save_prompt(current_filename);
-                    continue;
                 }
+
+                save_flag = true;
                 continue;
             }
             case (SEARCH):
@@ -238,6 +236,7 @@ int main(int argc, char* argv[]) {
                 }
                 puts("修改后的学生信息为");
                 print_record(&cur->records[index]);
+                eat_line();
                 continue;
             }
             case (ANALYZE):
@@ -274,7 +273,7 @@ int main(int argc, char* argv[]) {
             }
             case (INVALID_INPUT):
                 printf("Unrecognized command '%s'\n", input_buffer->buffer);
-                break;
+                continue;
             case (EXIT):
                 delete_buffer(input_buffer);
                 if(current_tree != NULL && !save_flag){
@@ -284,6 +283,7 @@ int main(int argc, char* argv[]) {
                         save_prompt(current_filename);
                     }
                 }
+                free_bplus_tree(current_tree);
                 printf("Exiting the program.\n");
                 return 0;
         }

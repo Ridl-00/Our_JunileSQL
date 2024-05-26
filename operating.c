@@ -7,65 +7,80 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_ORDER 3
+//#define NDEBUG
+#include <assert.h>
+
 #define ADD_FILENAME_LENGTH 6
 #define POLITICAL_NUM 5
 #define MAX_CLASS_NUMBER 50
 
+
+
 static char format_filename[MAX_FILENAME_LENGTH] = "";//用于统一文件路径便于管理文件
 
+Node *prev_leaf = NULL;
 
 
 static inline void trans_filename_format(const char *filename){
     sprintf(format_filename, "./repo/%s", filename);
 }//将文件路径转变为./db/<filename>形式
 
-// 保存节点到文件
-static void save_node(FILE *file, Node *node) {
-    fwrite(node, sizeof(Node), 1, file);
-    if (!node->is_leaf) {
-        for (int i = 0; i <= node->num_keys; i++) {
-            save_node(file, (Node *)node->children[i]);
+// 保存节点
+void save_node(const Node *node, FILE *file) {
+    fwrite(&node->is_leaf, sizeof(bool), 1, file);
+    fwrite(&node->num_keys, sizeof(int), 1, file);
+    fwrite(node->keys, sizeof(int), node->num_keys, file);
+    if (node->is_leaf) {
+        fwrite(node->records, sizeof(StudentRecord), node->num_keys, file);
+    } else {
+        for (int i = 0; i < node->num_keys; i++) {
+            save_node((Node *)node->children[i], file);
         }
     }
 }
 
-// 将B+树保存到文件
-void save_bplus_tree(BPlusTree *tree, const char *filename) {
+// 保存B+树
+void save_bplus_tree(const BPlusTree *tree, const char *filename) {
     trans_filename_format(filename);
     FILE *file = fopen(format_filename, "wb");
     if (!file) {
-        printf("无法打开文件进行写入操作\n");
+        perror("Failed to open file for writing");
         return;
     }
-    fwrite(&tree->order, sizeof(int), 1, file);
-    save_node(file, tree->root); // 保存根节点和所有子节点
+    save_node(tree->root, file);
     fclose(file);
 }
 
-// 从文件读取节点
-Node *load_node(FILE *file, int order) {
-    Node *node = (Node *)malloc(sizeof(Node));
-    fread(node, sizeof(Node), 1, file);
-    if (!node->is_leaf) {
-        for (int i = 0; i <= node->num_keys; i++) {
-            node->children[i] = load_node(file, order);
+// 加载节点
+Node *load_node(FILE *file) {
+    Node *node = malloc(sizeof(Node));
+    fread(&node->is_leaf, sizeof(bool), 1, file);
+    fread(&node->num_keys, sizeof(int), 1, file);
+    fread(node->keys, sizeof(int), node->num_keys, file);
+    if (node->is_leaf) {
+        if(prev_leaf != NULL){
+            prev_leaf->next = node;
+        }
+        prev_leaf = node;
+        fread(node->records, sizeof(StudentRecord), node->num_keys, file);
+    } else {
+        for (int i = 0; i < node->num_keys; i++) {
+            node->children[i] = load_node(file);
         }
     }
     return node;
 }
 
-// 从文件加载B+树
+// 加载B+树
 BPlusTree *load_bplus_tree(const char *filename) {
     trans_filename_format(filename);
-    FILE *file = fopen(format_filename, "rb+");
+    FILE *file = fopen(format_filename, "rb");
     if (!file) {
-        printf("文件不存在或文件加载失败\n");
+        perror("Failed to open file for reading");
         return NULL;
     }
-    BPlusTree *tree = (BPlusTree *)malloc(sizeof(BPlusTree));
-    fread(&tree->order, sizeof(int), 1, file); 
-    tree->root = load_node(file, tree->order);  // 加载根节点和所有子节点
+    BPlusTree *tree = new_bplus_tree(filename, MAX_ORDER);
+    tree->root = load_node(file);
     fclose(file);
     return tree;
 }

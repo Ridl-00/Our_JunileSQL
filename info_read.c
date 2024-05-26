@@ -1,4 +1,3 @@
-#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #include <btree.h>
 #include <stdbool.h>
 #include <stdio.h>
